@@ -185,7 +185,10 @@ void Sign_In_Function() {
 
         // Admin Login Panel
         if (strcmp(PassWordInput, "Admin") == 0 && strcmp(UserNameInput, "Admin") == 0) {
-
+            
+            Bar_Status(1);
+            printf("Login was Successful ~ %sAdmin%s\n", Color_Gray, Color_Reset);
+            
             Sleep(1500);
             Admin_Panel();
         
@@ -226,7 +229,7 @@ void Bar_Status(int login) {
 
     // login as admin
     else if (login == 1) {
-        printf("\n%s#%d%s %s %s>>> %s", Color_Blue, 0, Color_Red, "Admin", Color_Aqua, Color_Reset);
+        printf("\n%s#A%s %s %s>>> %s", Color_Blue, Color_Red, "Admin", Color_Aqua, Color_Reset);
     }
     
     // //login as player
@@ -348,9 +351,9 @@ void AP_Add_Doctor() {
         }
 
 
-        // get code meli
+        // get National Code
         Bar_Status(1);
-        printf("Enter Doctor Code: ");
+        printf("Enter Doctor National Code: ");
 
         str_func_return_code = User_Input_String(doc.code_n, 11);
 
@@ -382,8 +385,20 @@ void AP_Add_Doctor() {
         doc.id = doctor_count;
         doctor_count++;
 
+
         // save doctor in local doctors and update file
         // print doctor info to save
+
+        printf("\n  %sDoctor Added Successfully.%s\n\n", Color_Green, Color_Reset);
+        printf("    %sDoctor:           %s%s\n", Color_Blue, Color_Reset, doc.name);
+        printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
+        printf("    %sEmail:            %s%s\n", Color_Yellow, Color_Reset, doc.email);
+        printf("    %sID:               %s%d\n", Color_Green, Color_Reset, doc.id);
+        printf("    %sWallet:           %s%d\n", Color_Green, Color_Reset, doc.wallet);
+
+        Sleep(3000);
+        
+        break;
 
     }
 
@@ -636,7 +651,7 @@ int User_Input_String(char* str_list, int str_size) {
         else if (x == 8 && i == 0) continue;
         // no backspace :)
         
-        if (i >= str_size) {
+        if (i >= str_size - 1) {
             printf("\n");
             Error_Management(22);
             return -1;
@@ -691,7 +706,7 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
         else if (x == 8 && i == 0) continue;
         // no backspace :)
 
-        if(i >= pass_size) {
+        if(i >= pass_size - 1) {
             printf("\n");
             Error_Management(23);
             return -1;
