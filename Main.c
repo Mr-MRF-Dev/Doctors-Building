@@ -34,12 +34,12 @@ int run_cls = 1;
 
 //TODO:
 //// Sign_In_Function: ctrl + c back to menu
+//// User_Input_String: added Mode National Code
 //// get string function 
 // tarikh vorod dar barname
 // off color
 // file Error Management
 // print all doctor
-// User_Input_String: added Mode National Code
 // Hash PassWord
 
 
@@ -56,9 +56,10 @@ typedef struct doctor {
 } doctor;
 
 
-char doctor_file_path[] = "doctor.bin";
 int doctor_count = 0;
-doctor Doctors[50];
+#define DOCTOR_MAX_COUNT 50
+doctor Doctors[DOCTOR_MAX_COUNT];
+char doctor_file_path[] = "doctor.bin";
 
 
 
@@ -88,8 +89,8 @@ void Get_Files();
 void Update_Files();
 
 void Error_Management(int code);
+int User_Input_String(char* str_list, int str_size,int just_number);
 int User_Input_PassWord(char* pass_list, int pass_size);
-int User_Input_String(char* str_list, int str_size);
 int User_Input_Number_Range(int start, int end);
 
 
@@ -174,7 +175,7 @@ void Sign_In_Function() {
         printf("Enter Your UserName (Ctrl+C ~ Back): ");
 
         char UserNameInput[31];
-        int UserInt = User_Input_String(UserNameInput, 31);
+        int UserInt = User_Input_String(UserNameInput, 31, 0);
         
         // ctrl+c ~ -2
         if (UserInt == -2) {
@@ -338,7 +339,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("%sAdd Doctor%s (Ctrl + C ~ Back to Admin Panel)\n", Color_Green, Color_Reset);
 
-        if (doctor_count == 50) {
+        if (doctor_count == DOCTOR_MAX_COUNT) {
 
             Bar_Status(1);
             printf("There is no vacant office in the building :')\n");
@@ -353,7 +354,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Name: ");
 
-        str_func_return_code = User_Input_String(doc.name, 31);
+        str_func_return_code = User_Input_String(doc.name, 31, 0);
 
         if (str_func_return_code == -1) continue;
 
@@ -367,7 +368,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Email: ");
 
-        str_func_return_code = User_Input_String(doc.email, 51);
+        str_func_return_code = User_Input_String(doc.email, 51, 0);
 
         if (str_func_return_code == -1) continue;
 
@@ -382,7 +383,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor National Code: ");
 
-        str_func_return_code = User_Input_String(doc.code_n, 11);
+        str_func_return_code = User_Input_String(doc.code_n, 11, 1);
 
         if (str_func_return_code == -1) continue;
 
@@ -547,8 +548,8 @@ void Error_Management(int code) {
 
         case 21:
             printf("%s#Code 2-1%s\n", Color_Yellow, Color_Reset);
-            printf("      %sError in receiving UserName.\n", Color_Gray);
-            printf("      Username length must be more than 1 Character.%s\n", Color_Reset);
+            printf("      %sError in receiving String (Number Mode).\n", Color_Gray);
+            printf("      Please use Numeric Characters.%s\n", Color_Reset);
             break;
 
         case 22:
@@ -718,7 +719,7 @@ int User_Input_Number_Range(int start, int end) {
 
 
 
-int User_Input_String(char* str_list, int str_size) {
+int User_Input_String(char* str_list, int str_size, int just_number) {
 
     /*
         0 ~ OK
@@ -757,6 +758,12 @@ int User_Input_String(char* str_list, int str_size) {
         if (i >= str_size - 1) {
             printf("\n");
             Error_Management(22);
+            return -1;
+        }
+
+        if (just_number && (x < '0' || x > '9') ) {
+            printf("%c\n", (char)x);
+            Error_Management(21);
             return -1;
         }
 
