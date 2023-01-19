@@ -336,6 +336,17 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("%sAdd Doctor%s (Ctrl + C ~ Back to Admin Panel)\n", Color_Green, Color_Reset);
 
+        if (doctor_count == 50) {
+
+            Bar_Status(1);
+            printf("There is no vacant office in the building :')\n");
+
+            Sleep(3000);
+
+            return;
+
+        }
+
         // get name
         Bar_Status(1);
         printf("Enter Doctor Name: ");
