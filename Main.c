@@ -40,7 +40,7 @@ int run_cls = 1;
 // file Error Management
 // print all doctor
 // User_Input_String: added Mode National Code
-// :)
+// Hash PassWord
 
 
 
@@ -95,6 +95,8 @@ int User_Input_Number_Range(int start, int end);
 
 
 int main() {
+
+    RUN_CLS;
 
     Get_Files();
 
@@ -464,6 +466,8 @@ void AP_Add_Doctor() {
 
 void Get_Files() {
 
+    printf("%s# GET FILES #%s\n\n", Color_Red, Color_Reset);
+
     FILE *fp_Doctor = fopen(doctor_file_path, "rb");
 
     if (fp_Doctor != NULL) {
@@ -472,12 +476,16 @@ void Get_Files() {
             doctor_count++;
         }
 
+        printf("The file information was read successfully. %d Doctors.\n", doctor_count);
+
     }
+
+    else printf("The file does not exist or could not be opened ~ (%s).\n", doctor_file_path);
 
     fclose(fp_Doctor);
 
 
-
+    Sleep(5000);
 }
 
 
