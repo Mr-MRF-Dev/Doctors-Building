@@ -28,7 +28,7 @@ char Color_Green_Blue[] = "\033[38;2;0;200;80m";
 
 //* cls Command
 int run_cls = 0;
-#define RUN_CLS if (run_cls) system("cls")
+#define RUN_CLS if (run_cls) {printf("\n"); system("cls"); }
 
 
 
@@ -40,11 +40,39 @@ int run_cls = 0;
 
 
 
+//* Data
+typedef struct doctor {
+    int id;
+    int wallet;
+    char name[31];
+    char email[51];
+    char code_n[11];
+    char password[31];
+
+} doctor;
+
+int doctor_count = 0;
+
+// typedef struct Patient{
+//     int id;
+//     name[31];
+//     email[51];
+//     code_m[11];
+//     password[31];
+//     int wallet;
+
+// } Patient;
+
+
+
 //* Functions
 void Sign_In_Function();
 void Exit_Function(int bar_status_code, int exit_code);
 
 void Bar_Status(int login);
+
+void Admin_Panel();
+void AP_Add_Doctor();
 
 void Error_Management(int code);
 int User_Input_PassWord(char* pass_list, int pass_size);
@@ -60,9 +88,11 @@ int main() {
     printf("Welcome Back.\n\n");
     
     while (1) {
-            
+
+        RUN_CLS;
+
         Bar_Status(0);
-        printf("Sign In Page:\n\n");
+        printf("Home Page:\n\n");
         printf("    %s1 %s> %sSign in\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sForgot PassWord\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sExit\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -73,6 +103,8 @@ int main() {
         printf("Select one More: ");
 
         int in_code = User_Input_Number_Range(1, 3);
+
+        Sleep(500);
 
         switch ( in_code ) {
             
@@ -115,6 +147,11 @@ int main() {
 void Sign_In_Function() {
 
     while(1) {
+        
+        RUN_CLS;
+
+        Bar_Status(0);
+        printf("%sSign In%s\n", Color_Green, Color_Reset);
 
         Bar_Status(0);
         printf("Enter Your UserName (Ctrl+C ~ Back): ");
@@ -124,7 +161,8 @@ void Sign_In_Function() {
         
         // ctrl+c ~ -2
         if (UserInt == -2) {
-            printf("Back to Sign in Page.\n");
+            printf("Back to Home Page.\n");
+            Sleep(2000);
             return;
         }
 
@@ -139,6 +177,7 @@ void Sign_In_Function() {
         // ctrl+c ~ -2
         if (PassInt == -2) {
             printf("Back to Get User.\n");
+            Sleep(1000);
             continue;
         }
 
@@ -146,9 +185,9 @@ void Sign_In_Function() {
 
         // Admin Login Panel
         if (strcmp(PassWordInput, "Admin") == 0 && strcmp(UserNameInput, "Admin") == 0) {
-            
-            printf("Admin Login \n");
-            // admin panel
+
+            Sleep(1500);
+            Admin_Panel();
         
         }
 
@@ -156,6 +195,7 @@ void Sign_In_Function() {
             
             Bar_Status(0);
             printf("Do You Mean %sAdmin%s ? Try Again.\n", Color_Red, Color_Reset);
+            Sleep(2000);
             continue;
         
         }
@@ -184,15 +224,174 @@ void Bar_Status(int login) {
         printf("\n%s! Login ! %s>>> %s", Color_Yellow, Color_Aqua, Color_Reset);
     }
 
+    // login as admin
+    else if (login == 1) {
+        printf("\n%s#%d%s %s %s>>> %s", Color_Blue, 0, Color_Red, "Admin", Color_Aqua, Color_Reset);
+    }
+    
     // //login as player
-    // else if (login == 1){
+    // else if (login == 1) {
     //     printf("\n%s#%d%s %s %s>>> %s", Color_Blue, User->id, Color_Green, User->Username, Color_Aqua, Color_Reset);
     // }
 
-    // // login as admin
-    // else if (login == 2) {
-    //     printf("\n%s#%d%s %s %s>>> %s", Color_Blue, User->id, Color_Red, User->Username, Color_Aqua, Color_Reset);
-    // }
+
+}
+
+
+
+void Admin_Panel() {
+
+    while (1) {
+        
+        RUN_CLS;
+
+        Bar_Status(1);
+        printf("Admin Panel:\n\n");
+        printf("    %s1 %s> %sAdd Doctor\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sAdd Patient\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(1);
+        printf("Select one More: ");
+
+        int AdminInput = User_Input_Number_Range(1, 5);
+
+        Sleep(500);
+
+        if (AdminInput == -1) continue;
+
+        if (AdminInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Run Exit Function.\n");
+            Exit_Function(1, 0);
+        }
+
+        switch (AdminInput) {
+        
+            case 1:
+                AP_Add_Doctor();
+                break;
+            
+            case 2:
+                /* code */
+                break;
+            
+            case 3:
+                /* code */
+                break;
+            
+            case 4:
+                /* code */
+                break;
+            
+            case 5:
+                Bar_Status(1);
+                printf("logout Successful.\n");
+                Sleep(1500);
+                return;
+                break;
+            
+
+        } // switch end
+    
+
+    } // while end
+
+
+}
+
+
+
+void AP_Add_Doctor() {
+
+    doctor doc;
+
+    while(1) {
+
+        RUN_CLS;
+
+        int str_func_return_code = 0;
+
+        Bar_Status(1);
+        printf("%sAdd Doctor%s (Ctrl + C ~ Back to Admin Panel)\n", Color_Green, Color_Reset);
+
+        // get name
+        Bar_Status(1);
+        printf("Enter Doctor Name: ");
+
+        str_func_return_code = User_Input_String(doc.name, 31);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(2000);
+            return;
+        }
+
+        // get email
+        Bar_Status(1);
+        printf("Enter Doctor Email: ");
+
+        str_func_return_code = User_Input_String(doc.email, 51);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(2000);
+            return;
+        }
+
+
+        // get code meli
+        Bar_Status(1);
+        printf("Enter Doctor Code: ");
+
+        str_func_return_code = User_Input_String(doc.code_n, 11);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(2000);
+            return;
+        }
+
+
+        // get password
+        Bar_Status(1);
+        printf("Enter Doctor Password: ");
+
+        str_func_return_code = User_Input_String(doc.password, 11);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(2000);
+            return;
+        }
+
+
+        doc.wallet = 10;
+        doc.id = doctor_count;
+        doctor_count++;
+
+        // save doctor in local doctors and update file
+        // print doctor info to save
+
+    }
+
+    
+
+
+
+
 
 }
 
@@ -242,13 +441,13 @@ void Error_Management(int code) {
         case 22:
             printf("%s#Code 2-2%s\n", Color_Yellow, Color_Reset);
             printf("      %sError in receiving String.\n", Color_Gray);
-            printf("      String length should not be more than 30.%s\n", Color_Reset);
+            printf("      The Length of the String should not Exceed the limit.%s\n", Color_Reset);
             break;
         
         case 23:
             printf("%s#Code 2-3%s\n", Color_Yellow, Color_Reset);
             printf("      %sError in receiving PassWord.\n", Color_Gray);
-            printf("      PassWord length should not be more than 30.%s\n", Color_Reset);
+            printf("      The Length of the PassWord should not Exceed the limit.%s\n", Color_Reset);
             break;
     
         case 30: // delete admin :/
@@ -412,13 +611,13 @@ int User_Input_String(char* str_list, int str_size) {
 
     int i = 0;
 
-    while(i != str_size) {
+    while(1) {
         
         int x = getch();
 
         // ctrl+c exit code ~ 3
         if (x == 3) {
-            printf("%sCtrl+C %s", Color_Gray, Color_Reset);
+            printf("%s Ctrl+C %s", Color_Gray, Color_Reset);
             return -2;
         }
 
@@ -437,6 +636,11 @@ int User_Input_String(char* str_list, int str_size) {
         else if (x == 8 && i == 0) continue;
         // no backspace :)
         
+        if (i >= str_size) {
+            printf("\n");
+            Error_Management(22);
+            return -1;
+        }
 
         str_list[i] = (char)x;
         printf("%c", str_list[i]);
@@ -445,12 +649,6 @@ int User_Input_String(char* str_list, int str_size) {
 
         str_list[i] = '\0';
 
-    }
-
-    if (i == str_size) {
-        printf("\n");
-        Error_Management(22);
-        return -1;
     }
 
     return 0;
@@ -469,13 +667,13 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
     int i = 0;
 
-    while (i != pass_size) {
+    while (1) {
         
         int x = getch();
 
         // ctrl+c exit code ~ 3
         if (x == 3) {
-            printf("%sCtrl+C %s", Color_Gray, Color_Reset);
+            printf("%s Ctrl+C %s", Color_Gray, Color_Reset);
             return -2;
         }
 
@@ -492,7 +690,12 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
         else if (x == 8 && i == 0) continue;
         // no backspace :)
-        
+
+        if(i >= pass_size) {
+            printf("\n");
+            Error_Management(23);
+            return -1;
+        }
 
         pass_list[i] = (char)x;
         printf("%s* %s", Color_Gray, Color_Reset);
@@ -501,12 +704,6 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
         pass_list[i] = '\0';
 
-    }
-
-    if (i == pass_size) {
-        printf("\n");
-        Error_Management(23);
-        return -1;
     }
     
     return 0;
