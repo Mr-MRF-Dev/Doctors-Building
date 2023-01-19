@@ -33,9 +33,9 @@ int run_cls = 0;
 
 
 //TODO:
+//// Sign_In_Function: ctrl + c back to menu
+//// get string function 
 // tarikh vorod dar barname
-// get string function 
-// Sign_In_Function: ctrl + c back to menu
 // off color
 
 
@@ -117,7 +117,7 @@ void Sign_In_Function() {
     while(1) {
 
         Bar_Status(0);
-        printf("Enter Your UserName (Ctrl+C ~ Exit): ");
+        printf("Enter Your UserName (Ctrl+C ~ Back): ");
 
         char UserNameInput[31];
         int UserInt = User_Input_String(UserNameInput, 31);
@@ -128,17 +128,21 @@ void Sign_In_Function() {
             return;
         }
 
+        if (UserInt == -1) continue;
+
         Bar_Status(0);
         printf("Enter Your PassWord: ");
 
         char PassWordInput[31];
-        int PassInt = User_Input_PassWord(PassWordInput, 51);
+        int PassInt = User_Input_PassWord(PassWordInput, 31);
 
         // ctrl+c ~ -2
         if (PassInt == -2) {
             printf("Back to Get User.\n");
             continue;
         }
+
+        if (PassInt == -1) continue;
 
         // Admin Login Panel
         if (strcmp(PassWordInput, "Admin") == 0 && strcmp(UserNameInput, "Admin") == 0) {
@@ -164,6 +168,7 @@ void Sign_In_Function() {
 
         }
 
+        break;
 
     } // while end
 
@@ -231,13 +236,19 @@ void Error_Management(int code) {
         case 21:
             printf("%s#Code 2-1%s\n", Color_Yellow, Color_Reset);
             printf("      %sError in receiving UserName.\n", Color_Gray);
-            printf("      Username length should not be more than 50.%s\n", Color_Reset);
+            printf("      Username length must be more than 1 Character.%s\n", Color_Reset);
             break;
 
         case 22:
             printf("%s#Code 2-2%s\n", Color_Yellow, Color_Reset);
-            printf("      %sError in receiving UserName.\n", Color_Gray);
-            printf("      Username length must be more than 1 Character.%s\n", Color_Reset);
+            printf("      %sError in receiving String.\n", Color_Gray);
+            printf("      String length should not be more than 30.%s\n", Color_Reset);
+            break;
+        
+        case 23:
+            printf("%s#Code 2-3%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError in receiving PassWord.\n", Color_Gray);
+            printf("      PassWord length should not be more than 30.%s\n", Color_Reset);
             break;
     
         case 30: // delete admin :/
@@ -436,6 +447,12 @@ int User_Input_String(char* str_list, int str_size) {
 
     }
 
+    if (i == str_size) {
+        printf("\n");
+        Error_Management(22);
+        return -1;
+    }
+
     return 0;
 
 }
@@ -484,6 +501,12 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
         pass_list[i] = '\0';
 
+    }
+
+    if (i == pass_size) {
+        printf("\n");
+        Error_Management(23);
+        return -1;
     }
     
     return 0;
