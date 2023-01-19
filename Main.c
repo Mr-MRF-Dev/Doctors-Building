@@ -41,6 +41,15 @@ int run_cls = 1;
 // file Error Management
 // print all doctor
 // Hash PassWord
+// fix duplicate National Code
+
+
+
+//* Define Const Num
+#define NAME_SIZE 31
+#define EMAIL_SIZE 51
+#define NATIONAL_CODE_SIZE 11
+#define PASSWORD_SIZE 31
 
 
 
@@ -48,10 +57,10 @@ int run_cls = 1;
 typedef struct doctor {
     int id;
     int wallet;
-    char name[31];
-    char email[51];
-    char code_n[11];
-    char password[31];
+    char name[NAME_SIZE];
+    char email[EMAIL_SIZE];
+    char code_n[NATIONAL_CODE_SIZE];
+    char password[PASSWORD_SIZE];
 
 } doctor;
 
@@ -78,6 +87,7 @@ char doctor_file_path[] = "doctor.bin";
 
 //* Functions
 void Sign_In_Function();
+void Forgot_Password_Function();
 void Exit_Function(int bar_status_code, int exit_code);
 
 void Bar_Status(int login);
@@ -111,7 +121,7 @@ int main() {
 
         Bar_Status(0);
         printf("Home Page:\n\n");
-        printf("    %s1 %s> %sSign in\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s1 %s> %sSign In\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sForgot PassWord\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sExit\n", Color_Yellow, Color_Aqua, Color_Reset);
 
@@ -136,16 +146,14 @@ int main() {
                 break;
 
             case 1:
-                // sign in 
                 Sign_In_Function();
                 break;
 
             case 2:
-                // forgot pass
+                Forgot_Password_Function();
                 break;
             
             case 3:
-                // Exit
                 Exit_Function(0, 0);
                 return 0;
                 break;
@@ -169,13 +177,14 @@ void Sign_In_Function() {
         RUN_CLS;
 
         Bar_Status(0);
-        printf("%sSign In%s\n", Color_Green, Color_Reset);
+        printf("Sign In\n");
 
         Bar_Status(0);
         printf("Enter Your UserName (Ctrl+C ~ Back): ");
 
-        char UserNameInput[31];
-        int UserInt = User_Input_String(UserNameInput, 31, 0);
+        // UserName is National Code or 'Admin'
+        char UserNameInput[NATIONAL_CODE_SIZE];
+        int UserInt = User_Input_String(UserNameInput, NATIONAL_CODE_SIZE, 0);
         
         // ctrl+c ~ -2
         if (UserInt == -2) {
@@ -189,8 +198,8 @@ void Sign_In_Function() {
         Bar_Status(0);
         printf("Enter Your PassWord: ");
 
-        char PassWordInput[31];
-        int PassInt = User_Input_PassWord(PassWordInput, 31);
+        char PassWordInput[PASSWORD_SIZE];
+        int PassInt = User_Input_PassWord(PassWordInput, PASSWORD_SIZE);
 
         // ctrl+c ~ -2
         if (PassInt == -2) {
@@ -222,12 +231,122 @@ void Sign_In_Function() {
         }
 
         else {
+            
+            // Doctor Panel
+            for (int i=0; i<doctor_count; i++) {
 
-            // login in doc
+                if (strcmp(UserNameInput, Doctors[i].code_n) == 0 && strcmp(PassWordInput, Doctors[i].password) == 0 ) {
+
+                    printf("doctoc panel %d", i);
+                    Sleep(3000);
+                    return;
+
+                }
+
+            }
+
             // login in 
             // کاربرد تغریف نشده
 
         }
+
+        break;
+
+    } // while end
+
+
+}
+
+
+
+void Forgot_Password_Function() {
+
+
+    while(1) {
+        
+        RUN_CLS;
+
+        Bar_Status(0);
+        printf("Forgot PassWord\n");
+
+        Bar_Status(0);
+        printf("Enter Your UserName (Ctrl+C ~ Back): ");
+
+        // UserName is National Code or 'Admin'
+        char UserNameInput[NATIONAL_CODE_SIZE];
+        int UserInt = User_Input_String(UserNameInput, NATIONAL_CODE_SIZE, 0);
+        
+        // ctrl+c ~ -2
+        if (UserInt == -2) {
+            printf("Back to Home Page.\n");
+            Sleep(3000);
+            return;
+        }
+
+        if (UserInt == -1) continue;
+
+        Bar_Status(0);
+        printf("Enter Your Email: ");
+
+        char EmailInput[EMAIL_SIZE];
+        int EmailInt = User_Input_String(EmailInput, EMAIL_SIZE, 0);
+
+        // ctrl+c ~ -2
+        if (EmailInt == -2) {
+            printf("Back to Get User.\n");
+            Sleep(2000);
+            continue;
+        }
+
+        if (EmailInt == -1) continue;
+
+        // Admin Login Panel
+        if (strcmp(UserNameInput, "Admin") == 0) {
+            
+            Bar_Status(0);
+            printf("Admin PassWord is: %s'Admin'%s :/\n", Color_Red, Color_Reset);
+            Sleep(3000);
+        }
+
+        else {
+
+            // Doctors
+            for(int i=0; i < doctor_count; i++) {
+
+                if (strcmp(UserNameInput, Doctors[i].code_n) == 0 && strcmp(EmailInput, Doctors[i].email) == 0 ) {
+                    
+                    while(1) {
+
+                        Bar_Status(0);
+                        printf("Enter New PassWord (Ctrl+C ~ Cancel): ");
+
+                        char PassWordInput[PASSWORD_SIZE];
+                        int PassInt = User_Input_PassWord(PassWordInput, PASSWORD_SIZE);
+                        
+                        if (PassInt == -1) continue;
+
+                        if (PassInt == -2) {
+                            printf("%sCanceled%s\n", Color_Yellow, Color_Reset);
+                            return;
+                        }
+
+                        strcpy(Doctors[i].password, PassWordInput);
+                        Update_Files();
+
+                        Bar_Status(0);
+                        printf("The password was changed.\n");
+                        Sleep(3000);
+                        return;
+                        break;          
+
+                    }       
+                }
+            } // for doc end
+
+
+
+
+        } // else end
 
         break;
 
@@ -337,7 +456,7 @@ void AP_Add_Doctor() {
         int str_func_return_code = 0;
 
         Bar_Status(1);
-        printf("%sAdd Doctor%s (Ctrl + C ~ Back to Admin Panel)\n", Color_Green, Color_Reset);
+        printf("Add Doctor (Ctrl + C ~ Back to Admin Panel)\n");
 
         if (doctor_count == DOCTOR_MAX_COUNT) {
 
@@ -354,7 +473,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Name: ");
 
-        str_func_return_code = User_Input_String(doc.name, 31, 0);
+        str_func_return_code = User_Input_String(doc.name, NAME_SIZE, 0);
 
         if (str_func_return_code == -1) continue;
 
@@ -368,7 +487,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Email: ");
 
-        str_func_return_code = User_Input_String(doc.email, 51, 0);
+        str_func_return_code = User_Input_String(doc.email, EMAIL_SIZE, 0);
 
         if (str_func_return_code == -1) continue;
 
@@ -383,7 +502,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor National Code: ");
 
-        str_func_return_code = User_Input_String(doc.code_n, 11, 1);
+        str_func_return_code = User_Input_String(doc.code_n, NATIONAL_CODE_SIZE, 1);
 
         if (str_func_return_code == -1) continue;
 
@@ -398,7 +517,7 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Password: ");
 
-        str_func_return_code = User_Input_PassWord(doc.password, 31);
+        str_func_return_code = User_Input_PassWord(doc.password, PASSWORD_SIZE);
 
         if (str_func_return_code == -1) continue;
 
@@ -430,7 +549,7 @@ void AP_Add_Doctor() {
             }
 
             if (strcmp(doc.code_n, Doctors[i].code_n) == 0) {
-                Error_Management(31);
+                Error_Management(32);
                 flag = 1;
                 break;
             }
