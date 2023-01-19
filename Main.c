@@ -27,8 +27,8 @@ char Color_Green_Blue[] = "\033[38;2;0;200;80m";
 
 
 //* cls Command
-int run_cls = 0;
-#define RUN_CLS if (run_cls) {printf("\n"); system("cls"); }
+int run_cls = 1;
+#define RUN_CLS if (run_cls) system("cls")
 
 
 
@@ -37,6 +37,10 @@ int run_cls = 0;
 //// get string function 
 // tarikh vorod dar barname
 // off color
+// file Error Management
+// print all doctor
+// User_Input_String: added Mode National Code
+// :)
 
 
 
@@ -51,9 +55,15 @@ typedef struct doctor {
 
 } doctor;
 
-int doctor_count = 0;
 
-// typedef struct Patient{
+char doctor_file_path[] = "doctor.bin";
+int doctor_count = 0;
+doctor Doctors[50];
+
+
+
+
+// typedef struct Patient {
 //     int id;
 //     name[31];
 //     email[51];
@@ -74,6 +84,9 @@ void Bar_Status(int login);
 void Admin_Panel();
 void AP_Add_Doctor();
 
+void Get_Files();
+void Update_Files();
+
 void Error_Management(int code);
 int User_Input_PassWord(char* pass_list, int pass_size);
 int User_Input_String(char* str_list, int str_size);
@@ -82,6 +95,8 @@ int User_Input_Number_Range(int start, int end);
 
 
 int main() {
+
+    Get_Files();
 
     RUN_CLS;
 
@@ -162,7 +177,7 @@ void Sign_In_Function() {
         // ctrl+c ~ -2
         if (UserInt == -2) {
             printf("Back to Home Page.\n");
-            Sleep(2000);
+            Sleep(3000);
             return;
         }
 
@@ -177,7 +192,7 @@ void Sign_In_Function() {
         // ctrl+c ~ -2
         if (PassInt == -2) {
             printf("Back to Get User.\n");
-            Sleep(1000);
+            Sleep(2000);
             continue;
         }
 
@@ -187,7 +202,7 @@ void Sign_In_Function() {
         if (strcmp(PassWordInput, "Admin") == 0 && strcmp(UserNameInput, "Admin") == 0) {
             
             Bar_Status(1);
-            printf("Login was Successful ~ %sAdmin%s\n", Color_Gray, Color_Reset);
+            printf("Login was Successful ~ %sAdmin%s\n", Color_Red, Color_Reset);
             
             Sleep(1500);
             Admin_Panel();
@@ -221,7 +236,6 @@ void Sign_In_Function() {
 
 
 void Bar_Status(int login) {
-// void Bar_Status(struct Player* User, int login) {
     
     if (login == 0) {
         printf("\n%s! Login ! %s>>> %s", Color_Yellow, Color_Aqua, Color_Reset);
@@ -294,7 +308,7 @@ void Admin_Panel() {
             case 5:
                 Bar_Status(1);
                 printf("logout Successful.\n");
-                Sleep(1500);
+                Sleep(2000);
                 return;
                 break;
             
@@ -332,7 +346,7 @@ void AP_Add_Doctor() {
 
         if (str_func_return_code == -2) {
             printf("Back to Admin Panel.\n");
-            Sleep(2000);
+            Sleep(3000);
             return;
         }
 
@@ -346,7 +360,7 @@ void AP_Add_Doctor() {
 
         if (str_func_return_code == -2) {
             printf("Back to Admin Panel.\n");
-            Sleep(2000);
+            Sleep(3000);
             return;
         }
 
@@ -361,7 +375,7 @@ void AP_Add_Doctor() {
 
         if (str_func_return_code == -2) {
             printf("Back to Admin Panel.\n");
-            Sleep(2000);
+            Sleep(3000);
             return;
         }
 
@@ -370,26 +384,56 @@ void AP_Add_Doctor() {
         Bar_Status(1);
         printf("Enter Doctor Password: ");
 
-        str_func_return_code = User_Input_String(doc.password, 11);
+        str_func_return_code = User_Input_PassWord(doc.password, 31);
 
         if (str_func_return_code == -1) continue;
 
         if (str_func_return_code == -2) {
             printf("Back to Admin Panel.\n");
-            Sleep(2000);
+            Sleep(3000);
             return;
         }
 
 
         doc.wallet = 10;
         doc.id = doctor_count;
+
+
+        // Find a duplicate doctor
+        int flag = 0;
+        for (int i = 0; i < doctor_count; i++) {
+
+            if (strcmp(doc.name, Doctors[i].name) == 0) {
+                Error_Management(30);
+                flag = 1;
+                break;
+            }
+
+            if (strcmp(doc.email, Doctors[i].email) == 0) {
+                Error_Management(31);
+                flag = 1;
+                break;
+            }
+
+            if (strcmp(doc.code_n, Doctors[i].code_n) == 0) {
+                Error_Management(31);
+                flag = 1;
+                break;
+            }
+
+        }
+
+
+        if (flag) continue;
+
+
+        // Added Doctor in Struct List
+        Doctors[doctor_count] = doc;
         doctor_count++;
 
+        Update_Files();
 
-        // save doctor in local doctors and update file
-        // print doctor info to save
-
-        printf("\n  %sDoctor Added Successfully.%s\n\n", Color_Green, Color_Reset);
+        printf("\n  %sDoctor Added Successfully.%s\n", Color_Gray, Color_Reset);
         printf("    %sDoctor:           %s%s\n", Color_Blue, Color_Reset, doc.name);
         printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
         printf("    %sEmail:            %s%s\n", Color_Yellow, Color_Reset, doc.email);
@@ -400,13 +444,48 @@ void AP_Add_Doctor() {
         
         break;
 
+    } // while end
+
+
+}
+
+
+
+void Get_Files() {
+
+    FILE *fp_Doctor = fopen(doctor_file_path, "rb");
+
+    if (fp_Doctor != NULL) {
+        
+        while (fread(&Doctors[doctor_count], sizeof(doctor), 1, fp_Doctor)) {
+            doctor_count++;
+        }
+
     }
 
-    
+    fclose(fp_Doctor);
 
 
 
+}
 
+
+
+void Update_Files() {
+
+    FILE *fp_Doctor = fopen(doctor_file_path, "wb");
+
+    if (fp_Doctor != NULL) {
+        
+        for(int i =0; i < doctor_count; i++) {
+
+            fwrite(&Doctors[i], sizeof(doctor), 1, fp_Doctor);
+        
+        }
+
+    }
+
+    fclose(fp_Doctor);
 
 }
 
@@ -465,18 +544,23 @@ void Error_Management(int code) {
             printf("      The Length of the PassWord should not Exceed the limit.%s\n", Color_Reset);
             break;
     
-        case 30: // delete admin :/
+        case 30:
             printf("%s#Code 3-0%s\n", Color_Yellow, Color_Reset);
-            printf("      %sError Deleting Admin.\n", Color_Gray);
-            printf("      Why do you want to destroy yourself ? :/%s\n", Color_Reset);
+            printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another doctor with this name has already been registered.%s\n", Color_Reset);
             break;
 
-        case 31: // edit admin :/
+        case 31:
             printf("%s#Code 3-1%s\n", Color_Yellow, Color_Reset);
-            printf("      %sError in Editing Admin.\n", Color_Gray);
-            printf("      Why do you want to edit the admin :/%s\n", Color_Reset);
+            printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another doctor with this email has already been registered.%s\n", Color_Reset);
             break;
-
+        
+        case 32:
+            printf("%s#Code 3-2%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another doctor with this national code has already been registered.%s\n", Color_Reset);
+            break;
 
 
         default:
@@ -697,7 +781,7 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
         // backspace code ~ 8
         if (x == 8 && i >= 1) {
-            printf("\b\b  \b\b");
+            printf("\b \b");
             i-=1;
             pass_list[i] = '\0';
             continue;
@@ -713,7 +797,7 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
         }
 
         pass_list[i] = (char)x;
-        printf("%s* %s", Color_Gray, Color_Reset);
+        printf("%s*%s", Color_Gray, Color_Reset);
 
         i++;
 
