@@ -36,10 +36,10 @@ int run_cls = 1;
 //// Sign_In_Function: ctrl + c back to menu
 //// User_Input_String: added Mode National Code
 //// get string function 
+//// print all doctor
 // tarikh vorod dar barname
 // off color
 // file Error Management
-// print all doctor
 // Hash PassWord
 // fix duplicate National Code
 
@@ -94,6 +94,7 @@ void Bar_Status(int login);
 
 void Admin_Panel();
 void AP_Add_Doctor();
+void AP_Doctors_List();
 
 void Get_Files();
 void Update_Files();
@@ -387,17 +388,18 @@ void Admin_Panel() {
         Bar_Status(1);
         printf("Admin Panel:\n\n");
         printf("    %s1 %s> %sAdd Doctor\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s2 %s> %sAdd Patient\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s3 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s4 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s5 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sDoctors List\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sAdd Patient\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s6 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
 
         Sleep(500);
 
         Bar_Status(1);
         printf("Select one More: ");
 
-        int AdminInput = User_Input_Number_Range(1, 5);
+        int AdminInput = User_Input_Number_Range(1, 6);
 
         Sleep(500);
 
@@ -416,7 +418,7 @@ void Admin_Panel() {
                 break;
             
             case 2:
-                /* code */
+                AP_Doctors_List();
                 break;
             
             case 3:
@@ -428,6 +430,10 @@ void Admin_Panel() {
                 break;
             
             case 5:
+                /* code */
+                break;
+            
+            case 6:
                 Bar_Status(1);
                 printf("logout Successful.\n");
                 Sleep(2000);
@@ -567,10 +573,10 @@ void AP_Add_Doctor() {
         Update_Files();
 
         printf("\n  %sDoctor Added Successfully.%s\n", Color_Gray, Color_Reset);
-        printf("    %sDoctor:           %s%s\n", Color_Blue, Color_Reset, doc.name);
+        printf("    %sDoctor Name:      %s%s\n", Color_Blue, Color_Reset, doc.name);
         printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
-        printf("    %sEmail:            %s%s\n", Color_Yellow, Color_Reset, doc.email);
-        printf("    %sID:               %s%d\n", Color_Green, Color_Reset, doc.id);
+        printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
+        printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
         printf("    %sWallet:           %s%d\n", Color_Green, Color_Reset, doc.wallet);
 
         Sleep(3000);
@@ -579,6 +585,33 @@ void AP_Add_Doctor() {
 
     } // while end
 
+
+}
+
+
+
+void AP_Doctors_List() {
+
+    printf("\n    %sList Of Doctors%s\n", Color_Purple, Color_Reset);
+    printf("  ------------------------------\n");
+
+    for (int i=0; i<doctor_count; i++) {
+        
+        doctor doc = Doctors[i];
+
+        printf("    %sDoctor Name:      %s%s\n", Color_Blue, Color_Reset, doc.name);
+        printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
+        printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
+        printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
+        printf("    %sWallet:           %s%d\n", Color_Green, Color_Reset, doc.wallet);
+
+        printf("  ------------------------------\n");
+    
+    }
+
+    printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+
+    printf("%c\n", (char)getch() );
 
 }
 
