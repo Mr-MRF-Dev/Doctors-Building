@@ -291,7 +291,7 @@ void Sign_In_Function() {
 
             Bar_Status(0);
             printf("The Username or Password is incorrect!\n");
-            Sleep(3000);
+            Sleep(5000);
             continue;
 
 
@@ -316,14 +316,16 @@ void Forgot_Password_Function() {
         RUN_CLS;
 
         Bar_Status(0);
-        printf("Forgot PassWord\n");
+        printf("Forgot PassWord (Ctrl+C ~ Back)\n");
 
         Bar_Status(0);
-        printf("Enter Your UserName (Ctrl+C ~ Back): ");
+        printf("Enter Your UserName: ");
 
         // UserName is National Code or 'Admin'
         char UserNameInput[NATIONAL_CODE_SIZE];
         int UserInt = User_Input_String(UserNameInput, NATIONAL_CODE_SIZE, 0);
+        
+        if (UserInt == -1) continue;
         
         // ctrl+c ~ -2
         if (UserInt == -2) {
@@ -332,28 +334,26 @@ void Forgot_Password_Function() {
             return;
         }
 
-        if (UserInt == -1) continue;
-
         Bar_Status(0);
         printf("Enter Your Email: ");
 
         char EmailInput[EMAIL_SIZE];
         int EmailInt = User_Input_String(EmailInput, EMAIL_SIZE, 0);
 
+        if (EmailInt == -1) continue;
+        
         // ctrl+c ~ -2
         if (EmailInt == -2) {
-            printf("Back to Get User.\n");
-            Sleep(2000);
-            continue;
+            printf("Back to Home Page.\n");
+            Sleep(3000);
+            return;
         }
-
-        if (EmailInt == -1) continue;
 
         // Admin Login Panel
         if (strcmp(UserNameInput, "Admin") == 0) {
             
             Bar_Status(0);
-            printf("Admin PassWord is: %s'Admin'%s :/\n", Color_Red, Color_Reset);
+            printf("Admin PassWord is: '%sAdmin%s' :/\n", Color_Red, Color_Reset);
             Sleep(3000);
         }
 
@@ -376,6 +376,7 @@ void Forgot_Password_Function() {
 
                         if (PassInt == -2) {
                             printf("%sCanceled%s\n", Color_Yellow, Color_Reset);
+                            Sleep(3000);
                             return;
                         }
 
@@ -393,6 +394,46 @@ void Forgot_Password_Function() {
             } // for doc end
 
 
+
+            // Patients
+            for(int i=0; i < patient_count; i++) {
+
+                if (strcmp(UserNameInput, Patients[i].code_n) == 0 && strcmp(EmailInput, Patients[i].email) == 0 ) {
+                    
+                    while(1) {
+
+                        Bar_Status(0);
+                        printf("Enter New PassWord (Ctrl+C ~ Cancel): ");
+
+                        char PassWordInput[PASSWORD_SIZE];
+                        int PassInt = User_Input_PassWord(PassWordInput, PASSWORD_SIZE);
+                        
+                        if (PassInt == -1) continue;
+
+                        if (PassInt == -2) {
+                            printf("%sCanceled%s\n", Color_Yellow, Color_Reset);
+                            Sleep(3000);
+                            return;
+                        }
+
+                        strcpy(Patients[i].password, PassWordInput);
+                        Update_Files();
+
+                        Bar_Status(0);
+                        printf("The password was changed.\n");
+                        Sleep(3000);
+                        return;
+                        break;          
+
+                    }       
+                }
+            } // for pat end
+
+
+            Bar_Status(0);
+            printf("User With this Username and Email was Not Found!\n");
+            Sleep(5000);
+            continue;
 
 
         } // else end
