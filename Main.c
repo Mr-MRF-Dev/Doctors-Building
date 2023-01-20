@@ -8,6 +8,10 @@
 
 
 
+#pragma warning(disable:140)
+
+
+
 //** Colors
 char Color_Reset[] = "\033[0m";
 char Color_Red[] = "\033[0;31m";
@@ -36,11 +40,11 @@ int run_cls = 1;
 //// User_Input_String: added Mode National Code
 //// get string function 
 //// print all doctor
-// tarikh vorod dar barname
+//// fix duplicate National Code
+//// tarikh vorod dar barname
 // off color
 // file Error Management
 // Hash PassWord
-// fix duplicate National Code
 
 
 
@@ -92,23 +96,19 @@ char patient_file_path[] = "patient.bin";
 
 
 //* Date Time
-typedef struct date_in {
+typedef enum week {Sat, Sun, Mon, Tue, Wed, Thu, Fri} week;
+
+typedef struct date {
     int y;
     int m;
     int d;
-}date_in;
+    week week_d;
+}date;
 
 char date_in_path[] = "Date.bin";
-
-typedef enum week {Sat, Sun, Mon, Tue, Wed, Thu, Fri} week;
-
-typedef struct date_start_m {
-    int Start;
-    week Day;
-}date_start_m;
-
-char date_start_m_path[] = "Date-Start.bin";
-
+int Is_Date_Start_Cal = 0;
+date Date_Start_Cal;
+date Date_Login; 
 
 
 //** Functions
@@ -117,6 +117,7 @@ void Forgot_Password_Function();
 void Exit_Function(int bar_status_code, int exit_code);
 
 void Bar_Status(int login);
+void Main_Func_Get_User_Date();
 
 void Admin_Panel();
 void AP_Add_Doctor();
@@ -142,8 +143,8 @@ int main() {
 
     RUN_CLS;
 
-    printf("Welcome Back.\n\n");
-    
+    Main_Func_Get_User_Date();
+
     while (1) {
 
         RUN_CLS;
@@ -957,6 +958,23 @@ void Get_Files() {
 
 
 
+    // Get Date
+    FILE *fp_Date = fopen(date_in_path, "rb");
+
+    if (fp_Date != NULL) {
+        
+        Is_Date_Start_Cal = fread(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+
+        printf("The file information was read successfully, Date Start Cal\n");
+
+    }
+
+    else printf("The file does not exist or could not be opened ~ (%s).\n", date_in_path);
+
+    fclose(fp_Date);
+
+
+
     Sleep(5000);
 
 }
@@ -997,6 +1015,21 @@ void Update_Files() {
     }
 
     fclose(fp_Patient);
+
+
+
+    // Date Update
+    FILE *fp_Date = fopen(date_in_path, "wb");
+
+    if (fp_Date != NULL) {
+        
+        fwrite(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+
+    }
+
+    fclose(fp_Date);
+
+
 
 }
 
@@ -1194,7 +1227,8 @@ int User_Input_Number_Range(int start, int end) {
             return -2;
         }
 
-        printf("%c", (char)x);
+        // backspace code ~ 8
+        if (x != 8) printf("%c", (char)x);
 
         x -= 48;
 
@@ -1202,16 +1236,22 @@ int User_Input_Number_Range(int start, int end) {
         if ( !(x >= 0 && x <= 9) ) {
             
             // backspace code ~ 8
-            if (x == -40) {
+            if (x == -40 && c != 0) {
 
                 // back cursor
-                printf(" ");
-                printf("%c", (char)8);
+                printf("\b \b");
 
                 c-=2;
                 final /= 100;
                 x=0;
 
+            }
+
+            else if (x == -40 && c == 0) {
+                // skip backspace
+                x = 0;
+                final /= 10;
+                c--;
             }
 
             else {
@@ -1234,7 +1274,6 @@ int User_Input_Number_Range(int start, int end) {
         x = getch();
     }
     
-
     final /= 10;
 
     printf("\n");
@@ -1379,6 +1418,122 @@ void Exit_Function(int bar_status_code, int exit_code) {
     RUN_CLS;
     
     exit(exit_code);
+
+}
+
+
+
+void Main_Func_Get_User_Date() {
+    
+    while(1) {
+
+        RUN_CLS;
+        
+        Bar_Status(0);
+        printf("Enter Today's Date (Ctrl+C ~ Exit)\n");
+
+
+        Bar_Status(0);
+        printf("Year: ");
+        
+        int year_in = User_Input_Number_Range(1, 9999);
+
+        if (year_in == -1) continue;
+
+        if (year_in == -2) {
+            printf("\n");
+            Exit_Function(0, 0);
+            break;
+        }
+
+
+        Bar_Status(0);
+        printf("Month: ");
+        
+        int month_in = User_Input_Number_Range(1, 12);
+
+        if (month_in == -1) continue;
+
+        if (month_in == -2) {
+            printf("\n");
+            Exit_Function(0, 0);
+            break;
+        }
+
+
+        Bar_Status(0);
+        printf("Day: ");
+
+        int day_in = User_Input_Number_Range(1, 31);
+
+        if (day_in == -1) continue;
+
+        if (day_in == -2) {
+            printf("\n");
+            Exit_Function(0, 0);
+            break;
+        }
+
+
+        Bar_Status(0);
+        printf("WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
+
+        int week_day_in = User_Input_Number_Range(0, 6);
+
+        if (week_day_in == -1) continue;
+
+        if (week_day_in == -2) {
+            printf("\n");
+            Exit_Function(0, 0);
+            break;
+        }
+
+        Date_Login.y = year_in;
+        Date_Login.m = month_in;
+        Date_Login.d = day_in;
+        Date_Login.week_d = week_day_in;
+        
+        Bar_Status(0);
+        printf("Login Date: %d/%d/%d, ", Date_Login.y, Date_Login.m, Date_Login.d);
+
+        switch (Date_Login.week_d) {
+           
+            case Sat:
+                printf("Saturday.\n");
+                break;
+
+            case Sun:
+                printf("Sunday.\n");
+                break;
+
+            case Mon:
+                printf("Monday.\n");
+                break;
+
+            case Tue:
+                printf("Tuesday.\n");
+                break;
+
+            case Wed:
+                printf("Wednesday.\n");
+                break;
+
+            case Thu:
+                printf("Thursday.\n");
+                break;
+
+            case Fri:
+                printf("Friday.\n");
+                break;
+
+        }
+
+        Sleep(3000);
+        break;
+    
+
+    } // while end
+
 
 }
 
