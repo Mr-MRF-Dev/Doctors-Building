@@ -1,4 +1,3 @@
-#include <io.h>
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -9,7 +8,7 @@
 
 
 
-//* Colors
+//** Colors
 char Color_Reset[] = "\033[0m";
 char Color_Red[] = "\033[0;31m";
 char Color_Red_Dark[] = "\033[38;2;0;255;255m";
@@ -26,7 +25,7 @@ char Color_Green_Blue[] = "\033[38;2;0;200;80m";
 
 
 
-//* cls Command
+//** cls Command
 int run_cls = 1;
 #define RUN_CLS if (run_cls) system("cls")
 
@@ -45,7 +44,7 @@ int run_cls = 1;
 
 
 
-//* Define Const Num
+//** Define Const Num
 #define NAME_SIZE 31
 #define EMAIL_SIZE 51
 #define NATIONAL_CODE_SIZE 11
@@ -53,7 +52,9 @@ int run_cls = 1;
 
 
 
-//* Data
+//** Data:
+
+//* Doctor
 typedef struct doctor {
     int id;
     int wallet;
@@ -64,7 +65,6 @@ typedef struct doctor {
 
 } doctor;
 
-
 int doctor_count = 0;
 #define DOCTOR_MAX_COUNT 50
 doctor Doctors[DOCTOR_MAX_COUNT];
@@ -72,6 +72,7 @@ char doctor_file_path[] = "doctor.bin";
 
 
 
+//* Patient
 typedef struct patient {
     int id;
     char name[NAME_SIZE];
@@ -81,9 +82,7 @@ typedef struct patient {
 
 } patient;
 
-
 // Patient visit
-
 
 int patient_count = 0;
 #define PATIENT_MAX_COUNT 800
@@ -92,8 +91,27 @@ char patient_file_path[] = "patient.bin";
 
 
 
+//* Date Time
+typedef struct date_in {
+    int y;
+    int m;
+    int d;
+}date_in;
 
-//* Functions
+char date_in_path[] = "Date.bin";
+
+typedef enum week {Sat, Sun, Mon, Tue, Wed, Thu, Fri} week;
+
+typedef struct date_start_m {
+    int Start;
+    week Day;
+}date_start_m;
+
+char date_start_m_path[] = "Date-Start.bin";
+
+
+
+//** Functions
 void Sign_In_Function();
 void Forgot_Password_Function();
 void Exit_Function(int bar_status_code, int exit_code);
@@ -104,6 +122,7 @@ void Admin_Panel();
 void AP_Add_Doctor();
 void AP_Doctors_List();
 void AP_Add_Patient();
+void AP_Patients_List();
 
 void Get_Files();
 void Update_Files();
@@ -399,16 +418,17 @@ void Admin_Panel() {
         printf("    %s1 %s> %sAdd Doctor\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sDoctors List\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sAdd Patient\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s4 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s5 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s6 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sPatients List\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s6 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s7 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
 
         Sleep(500);
 
         Bar_Status(1);
         printf("Select one More: ");
 
-        int AdminInput = User_Input_Number_Range(1, 6);
+        int AdminInput = User_Input_Number_Range(1, 7);
 
         Sleep(500);
 
@@ -435,7 +455,7 @@ void Admin_Panel() {
                 break;
             
             case 4:
-                /* code */
+                AP_Patients_List();
                 break;
             
             case 5:
@@ -443,6 +463,10 @@ void Admin_Panel() {
                 break;
             
             case 6:
+                /* code */
+                break;
+            
+            case 7:
                 Bar_Status(1);
                 printf("logout Successful.\n");
                 Sleep(2000);
@@ -619,6 +643,8 @@ void AP_Add_Doctor() {
 
 void AP_Doctors_List() {
 
+    RUN_CLS;
+
     printf("\n    %sList Of Doctors%s\n", Color_Purple, Color_Reset);
     printf("  ------------------------------\n");
 
@@ -660,7 +686,7 @@ void AP_Add_Patient() {
         if (patient_count == PATIENT_MAX_COUNT) {
 
             Bar_Status(1);
-            printf("There is no vacant office in the building :')\n");
+            printf("The capacity of patients is completed :')\n");
 
             Sleep(3000);
 
@@ -793,6 +819,34 @@ void AP_Add_Patient() {
 
     } // while end
 
+
+}
+
+
+
+void AP_Patients_List() {
+
+    RUN_CLS;
+
+    printf("\n    %sList Of Patients%s\n", Color_Purple, Color_Reset);
+    printf("  ------------------------------\n");
+
+    for (int i=0; i<patient_count; i++) {
+        
+        patient pat = Patients[i];
+
+        printf("    %sPatient Name:      %s%s\n", Color_Blue, Color_Reset, pat.name);
+        printf("    %sNational Code:     %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
+        printf("    %sPatient Email:     %s%s\n", Color_Yellow, Color_Reset, pat.email);
+        printf("    %sPatient ID:        %s%d\n", Color_Green, Color_Reset, pat.id);
+
+        printf("  ------------------------------\n");
+    
+    }
+
+    printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+
+    printf("%c\n", (char)getch() );
 
 }
 
@@ -1261,6 +1315,8 @@ void Exit_Function(int bar_status_code, int exit_code) {
     printf("%sExit%s :) %sBye Bye.%s\n",Color_Red, Color_Yellow, Color_Gray, Color_Reset);
     Sleep(3000);
 
+    RUN_CLS;
+    
     exit(exit_code);
 
 }
