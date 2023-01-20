@@ -72,16 +72,24 @@ char doctor_file_path[] = "doctor.bin";
 
 
 
+typedef struct patient {
+    int id;
+    char name[NAME_SIZE];
+    char email[EMAIL_SIZE];
+    char code_n[NATIONAL_CODE_SIZE];
+    char password[PASSWORD_SIZE];
 
-// typedef struct Patient {
-//     int id;
-//     name[31];
-//     email[51];
-//     code_m[11];
-//     password[31];
-//     int wallet;
+} patient;
 
-// } Patient;
+
+// Patient visit
+
+
+int patient_count = 0;
+#define PATIENT_MAX_COUNT 800
+patient Patients[PATIENT_MAX_COUNT];
+char patient_file_path[] = "patient.bin";
+
 
 
 
@@ -95,6 +103,7 @@ void Bar_Status(int login);
 void Admin_Panel();
 void AP_Add_Doctor();
 void AP_Doctors_List();
+void AP_Add_Patient();
 
 void Get_Files();
 void Update_Files();
@@ -422,7 +431,7 @@ void Admin_Panel() {
                 break;
             
             case 3:
-                /* code */
+                AP_Add_Patient();
                 break;
             
             case 4:
@@ -563,6 +572,24 @@ void AP_Add_Doctor() {
         }
 
 
+        // Find a duplicate Patient (code_n or email)
+        for (int i=0; i<patient_count; i++) {
+
+            if(strcmp(doc.email, Patients[i].email) == 0) {
+                Error_Management(33);
+                flag = 1;
+                break;
+            }
+
+            if(strcmp(doc.code_n, Patients[i].code_n) == 0) {
+                Error_Management(34);
+                flag = 1;
+                break;
+            }
+        
+        }
+
+
         if (flag) continue;
 
 
@@ -617,10 +644,167 @@ void AP_Doctors_List() {
 
 
 
+void AP_Add_Patient() {
+
+    patient pat;
+
+    while(1) {
+
+        RUN_CLS;
+
+        int str_func_return_code = 0;
+
+        Bar_Status(1);
+        printf("Add Patient (Ctrl + C ~ Back to Admin Panel)\n");
+
+        if (patient_count == PATIENT_MAX_COUNT) {
+
+            Bar_Status(1);
+            printf("There is no vacant office in the building :')\n");
+
+            Sleep(3000);
+
+            return;
+
+        }
+
+        // get name
+        Bar_Status(1);
+        printf("Enter Patient Name: ");
+
+        str_func_return_code = User_Input_String(pat.name, NAME_SIZE, 0);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(3000);
+            return;
+        }
+
+        // get email
+        Bar_Status(1);
+        printf("Enter Patient Email: ");
+
+        str_func_return_code = User_Input_String(pat.email, EMAIL_SIZE, 0);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        // get National Code
+        Bar_Status(1);
+        printf("Enter Patient National Code: ");
+
+        str_func_return_code = User_Input_String(pat.code_n, NATIONAL_CODE_SIZE, 1);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        // get password
+        Bar_Status(1);
+        printf("Enter Patient Password: ");
+
+        str_func_return_code = User_Input_PassWord(pat.password, PASSWORD_SIZE);
+
+        if (str_func_return_code == -1) continue;
+
+        if (str_func_return_code == -2) {
+            printf("Back to Admin Panel.\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        pat.id = patient_count;
+
+
+        // Find a duplicate Patient
+        int flag = 0;
+        for (int i = 0; i < patient_count; i++) {
+
+            if (strcmp(pat.name, Patients[i].name) == 0) {
+                Error_Management(35);
+                flag = 1;
+                break;
+            }
+
+            if (strcmp(pat.email, Patients[i].email) == 0) {
+                Error_Management(36);
+                flag = 1;
+                break;
+            }
+
+            if (strcmp(pat.code_n, Patients[i].code_n) == 0) {
+                Error_Management(37);
+                flag = 1;
+                break;
+            }
+
+        }
+
+        // Find a duplicate Doctor (code_n or email)
+        for (int i=0; i<doctor_count; i++) {
+
+            if(strcmp(pat.email, Doctors[i].email) == 0) {
+                Error_Management(38);
+                flag = 1;
+                break;
+            }
+
+            if(strcmp(pat.code_n, Doctors[i].code_n) == 0) {
+                Error_Management(39);
+                flag = 1;
+                break;
+            }
+        
+        }
+
+
+        if (flag) continue;
+
+
+        // Added Doctor in Struct List
+        Patients[patient_count] = pat;
+        patient_count++;
+
+        Update_Files();
+
+        printf("\n  %sPatient Added Successfully.%s\n", Color_Gray, Color_Reset);
+        printf("    %sPatient Name:      %s%s\n", Color_Blue, Color_Reset, pat.name);
+        printf("    %sNational Code:     %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
+        printf("    %sPatient Email:     %s%s\n", Color_Yellow, Color_Reset, pat.email);
+        printf("    %sPatient ID:        %s%d\n", Color_Green, Color_Reset, pat.id);
+
+        Sleep(3000);
+        
+        break;
+
+    } // while end
+
+
+}
+
+
+
 void Get_Files() {
 
     printf("%s# GET FILES #%s\n\n", Color_Red, Color_Reset);
 
+
+
+    // Get Doctors 
     FILE *fp_Doctor = fopen(doctor_file_path, "rb");
 
     if (fp_Doctor != NULL) {
@@ -638,13 +822,36 @@ void Get_Files() {
     fclose(fp_Doctor);
 
 
+
+    // Get Patients
+    FILE *fp_Patient = fopen(patient_file_path, "rb");
+
+    if (fp_Patient != NULL) {
+        
+        while (fread(&Patients[patient_count], sizeof(patient), 1, fp_Patient)) {
+            patient_count++;
+        }
+
+        printf("The file information was read successfully. %d Patients.\n", patient_count);
+
+    }
+
+    else printf("The file does not exist or could not be opened ~ (%s).\n", patient_file_path);
+
+    fclose(fp_Patient);
+
+
+
     Sleep(5000);
+
 }
 
 
 
 void Update_Files() {
 
+
+    // Doctors Update
     FILE *fp_Doctor = fopen(doctor_file_path, "wb");
 
     if (fp_Doctor != NULL) {
@@ -658,6 +865,23 @@ void Update_Files() {
     }
 
     fclose(fp_Doctor);
+    
+
+    
+    // Patients Update
+    FILE *fp_Patient = fopen(patient_file_path, "wb");
+
+    if (fp_Patient != NULL) {
+        
+        for(int i =0; i < patient_count; i++) {
+
+            fwrite(&Patients[i], sizeof(patient), 1, fp_Patient);
+        
+        }
+
+    }
+
+    fclose(fp_Patient);
 
 }
 
@@ -731,6 +955,48 @@ void Error_Management(int code) {
         case 32:
             printf("%s#Code 3-2%s\n", Color_Yellow, Color_Reset);
             printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another doctor with this national code has already been registered.%s\n", Color_Reset);
+            break;
+       
+        case 33:
+            printf("%s#Code 3-3%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another patient with this email has already been registered.%s\n", Color_Reset);
+            break;
+        
+        case 34:
+            printf("%s#Code 3-4%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Doctor.\n", Color_Gray);
+            printf("      Another patient with this national code has already been registered.%s\n", Color_Reset);
+            break;
+        
+        case 35:
+            printf("%s#Code 3-5%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding void Patient.\n", Color_Gray);
+            printf("      Another patient with this name has already been registered.%s\n", Color_Reset);
+            break;
+
+        case 36:
+            printf("%s#Code 3-6%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Patient.\n", Color_Gray);
+            printf("      Another patient with this email has already been registered.%s\n", Color_Reset);
+            break;
+        
+        case 37:
+            printf("%s#Code 3-7%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Patient.\n", Color_Gray);
+            printf("      Another patient with this national code has already been registered.%s\n", Color_Reset);
+            break;
+       
+        case 38:
+            printf("%s#Code 3-8%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Patient.\n", Color_Gray);
+            printf("      Another doctor with this email has already been registered.%s\n", Color_Reset);
+            break;
+        
+        case 39:
+            printf("%s#Code 3-9%s\n", Color_Yellow, Color_Reset);
+            printf("      %sError Adding Patient.\n", Color_Gray);
             printf("      Another doctor with this national code has already been registered.%s\n", Color_Reset);
             break;
 
