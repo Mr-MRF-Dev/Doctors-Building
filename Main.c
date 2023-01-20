@@ -206,10 +206,10 @@ void Sign_In_Function() {
         RUN_CLS;
 
         Bar_Status(0);
-        printf("Sign In\n");
+        printf("Sign In (Ctrl+C ~ Back)\n");
 
         Bar_Status(0);
-        printf("Enter Your UserName (Ctrl+C ~ Back): ");
+        printf("Enter Your UserName: ");
 
         // UserName is National Code or 'Admin'
         char UserNameInput[NATIONAL_CODE_SIZE];
@@ -232,9 +232,9 @@ void Sign_In_Function() {
 
         // ctrl+c ~ -2
         if (PassInt == -2) {
-            printf("Back to Get User.\n");
-            Sleep(2000);
-            continue;
+            printf("Back to Home Page.\n");
+            Sleep(3000);
+            return;
         }
 
         if (PassInt == -1) continue;
@@ -254,7 +254,7 @@ void Sign_In_Function() {
             
             Bar_Status(0);
             printf("Do You Mean %sAdmin%s ? Try Again.\n", Color_Red, Color_Reset);
-            Sleep(2000);
+            Sleep(3000);
             continue;
         
         }
@@ -274,12 +274,32 @@ void Sign_In_Function() {
 
             }
 
-            // login in 
-            // کاربرد تغریف نشده
 
-        }
+            // Patient Panel
+            for (int i=0; i<patient_count; i++) {
+
+                if (strcmp(UserNameInput, Patients[i].code_n) == 0 && strcmp(PassWordInput, Patients[i].password) == 0 ) {
+
+                    printf("patient panel %d", i);
+                    Sleep(3000);
+                    return;
+
+                }
+
+            }
+
+
+            Bar_Status(0);
+            printf("The Username or Password is incorrect!\n");
+            Sleep(3000);
+            continue;
+
+
+        } // else end
+
 
         break;
+
 
     } // while end
 
