@@ -36,15 +36,10 @@ int run_cls = 1;
 
 
 //TODO:
-//// Sign_In_Function: ctrl + c back to menu
-//// User_Input_String: added Mode National Code
-//// get string function 
-//// print all doctor
-//// fix duplicate National Code
-//// tarikh vorod dar barname
 // off color
 // file Error Management
 // Hash PassWord
+// 
 
 
 
@@ -105,10 +100,12 @@ typedef struct date {
     week week_d;
 }date;
 
-char date_in_path[] = "Date.bin";
-int Is_Date_Start_Cal = 0;
+char calendar_in_path[] = "Calendar.bin";
+int Active_Calendar = 0;
 date Date_Start_Cal;
 date Date_Login; 
+
+
 
 
 //** Functions
@@ -124,6 +121,11 @@ void AP_Add_Doctor();
 void AP_Doctors_List();
 void AP_Add_Patient();
 void AP_Patients_List();
+void AP_Monthly_Schedule();
+
+void Print_Calendar(int y, int m, int d, int week_d);
+void Print_WeekDay(int d);
+void Print_Month(int m);
 
 void Get_Files();
 void Update_Files();
@@ -143,7 +145,15 @@ int main() {
 
     RUN_CLS;
 
-    Main_Func_Get_User_Date();
+    if (Active_Calendar) {
+        Main_Func_Get_User_Date();
+    }
+
+    else {
+        Bar_Status(0);
+        printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
+        Sleep(5000);
+    }
 
     while (1) {
 
@@ -521,7 +531,7 @@ void Admin_Panel() {
                 break;
             
             case 5:
-                /* code */
+                AP_Monthly_Schedule();
                 break;
             
             case 6:
@@ -914,6 +924,202 @@ void AP_Patients_List() {
 
 
 
+void AP_Monthly_Schedule() {
+
+
+    if (Active_Calendar == 0) {
+
+        while(1) {
+            
+            //* set calendar
+
+            RUN_CLS;
+
+            Bar_Status(1);
+            printf("Set Calendar (Ctrl+C ~ Back to Admin Panel)\n");
+
+            Bar_Status(1);
+            printf("Year: ");
+            
+            int year_in = User_Input_Number_Range(1, 9999);
+
+            if (year_in == -1) continue;
+
+            if (year_in == -2) {
+                printf("Back To Admin Panel\n");
+                Sleep(3000);
+                return;
+            }
+
+
+            Bar_Status(1);
+            printf("Month: ");
+            
+            int month_in = User_Input_Number_Range(1, 12);
+
+            if (month_in == -1) continue;
+
+            if (month_in == -2) {
+                printf("Back To Admin Panel\n");
+                Sleep(3000);
+                return;
+            }
+
+
+            Bar_Status(1);
+            printf("Set Day Auto ? (y ~ Yes / To Cancel, Press Another Key): ");
+
+            int x = getch();
+            printf("%c\n", (char)x);
+
+
+            int day_in;
+            if (x == 'y' || x == 'Y') {
+
+                if (1 <= month_in && month_in <= 6) day_in = 31;
+
+                else if (7 <= month_in && month_in <= 11) day_in = 30;
+
+                else if (month_in == 12) {
+                    
+                    if ((year_in - 1399) % 4 == 0) day_in = 30;
+
+                    else day_in = 29;
+
+                }
+
+            }
+
+            else {
+
+                Bar_Status(1);
+                printf("Day Count: ");
+
+                day_in = User_Input_Number_Range(1, 31);
+
+                if (day_in == -1) continue;
+
+                if (day_in == -2) {
+                    printf("Back To Admin Panel\n");
+                    Sleep(3000);
+                    return;
+                }
+
+            }
+
+
+            Bar_Status(1);
+            printf("Start WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
+
+            int week_day_in = User_Input_Number_Range(0, 6);
+
+            if (week_day_in == -1) continue;
+
+            if (week_day_in == -2) {
+                printf("\n");
+                Bar_Status(1);
+                printf("Back To Admin Panel\n");
+                Sleep(3000);
+                return;
+            }
+
+            Date_Start_Cal.y = year_in;
+            Date_Start_Cal.m = month_in;
+            Date_Start_Cal.d = day_in;
+            Date_Start_Cal.week_d = week_day_in;
+
+            Active_Calendar = 1;
+            Update_Files();
+
+
+            Bar_Status(1);
+            printf("The App Calendar has been Set Successfully. ");
+            printf("(Y~%d M~%d D-C~%d W-D~%d)\n", Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+            Sleep(5000);
+
+            break;
+
+
+        } // while end ~ set calendar
+
+    } // if end 
+
+
+    else {}
+
+    
+    // menu
+    while(1) {
+        
+        RUN_CLS;
+
+        Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+        Bar_Status(1);
+        printf("Monthly Schedule\n\n");
+        printf("    %s1 %s> %sSign In\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sForgot PassWord\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(1);
+        printf("Select one More: ");
+
+        int in_code = User_Input_Number_Range(1, 2);
+
+        Sleep(500);
+
+        printf("pekh");
+
+        break;
+
+    }
+
+
+}
+
+
+
+void Print_Calendar(int y, int m, int d, int week_d) {
+
+    printf("    %s>>> ", Color_Green);
+
+    Print_Month(m);
+
+    printf(" ~ %d %s\n", y, Color_Reset);
+    
+    printf("    %s--- --- --- --- --- --- ---%s\n", Color_Gray, Color_Reset);
+    printf("    Sat Sun Mon Tue Wed Thu %sFri%s\n", Color_Red, Color_Reset);
+    printf("    %s--- --- --- --- --- --- ---%s\n", Color_Gray, Color_Reset);
+
+    printf("    ");
+
+    for (int i =0; i<week_d; i++) {
+        printf("    ");
+    }
+
+    for (int i = 1; i<=d; i++) {
+
+        if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
+        
+        else printf("%3d", i);
+
+        week_d++;
+
+        if (week_d > 6) {
+            printf("\n    ");
+            week_d = 0;
+        }
+
+        else printf(" ");
+    }
+
+    printf("\n");
+
+}
+
+
+
 void Get_Files() {
 
     printf("%s# GET FILES #%s\n\n", Color_Red, Color_Reset);
@@ -959,17 +1165,17 @@ void Get_Files() {
 
 
     // Get Date
-    FILE *fp_Date = fopen(date_in_path, "rb");
+    FILE *fp_Date = fopen(calendar_in_path, "rb");
 
     if (fp_Date != NULL) {
         
-        Is_Date_Start_Cal = fread(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+        Active_Calendar = fread(&Date_Start_Cal, sizeof(date), 1, fp_Date);
 
         printf("The file information was read successfully, Date Start Cal\n");
 
     }
 
-    else printf("The file does not exist or could not be opened ~ (%s).\n", date_in_path);
+    else printf("The file does not exist or could not be opened ~ (%s).\n", calendar_in_path);
 
     fclose(fp_Date);
 
@@ -1019,15 +1225,19 @@ void Update_Files() {
 
 
     // Date Update
-    FILE *fp_Date = fopen(date_in_path, "wb");
+    if (Active_Calendar) {
 
-    if (fp_Date != NULL) {
-        
-        fwrite(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+        FILE *fp_Date = fopen(calendar_in_path, "wb");
+
+        if (fp_Date != NULL) {
+            
+            fwrite(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+
+        }
+
+        fclose(fp_Date);
 
     }
-
-    fclose(fp_Date);
 
 
 
@@ -1475,58 +1685,31 @@ void Main_Func_Get_User_Date() {
         }
 
 
-        Bar_Status(0);
-        printf("WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
+        // Bar_Status(0);
+        // printf("WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
 
-        int week_day_in = User_Input_Number_Range(0, 6);
+        // int week_day_in = User_Input_Number_Range(0, 6);
 
-        if (week_day_in == -1) continue;
+        // if (week_day_in == -1) continue;
 
-        if (week_day_in == -2) {
-            printf("\n");
-            Exit_Function(0, 0);
-            break;
-        }
+        // if (week_day_in == -2) {
+        //     printf("\n");
+        //     Exit_Function(0, 0);
+        //     break;
+        // }
 
         Date_Login.y = year_in;
         Date_Login.m = month_in;
         Date_Login.d = day_in;
-        Date_Login.week_d = week_day_in;
+        // Date_Login.week_d = week_day_in;
         
         Bar_Status(0);
-        printf("Login Date: %d/%d/%d, ", Date_Login.y, Date_Login.m, Date_Login.d);
+        printf("Login Date: %d/%d/%d", Date_Login.y, Date_Login.m, Date_Login.d);
 
-        switch (Date_Login.week_d) {
-           
-            case Sat:
-                printf("Saturday.\n");
-                break;
+        // printf(", ");
+        // Print_WeekDay(Date_Login.week_d);
 
-            case Sun:
-                printf("Sunday.\n");
-                break;
-
-            case Mon:
-                printf("Monday.\n");
-                break;
-
-            case Tue:
-                printf("Tuesday.\n");
-                break;
-
-            case Wed:
-                printf("Wednesday.\n");
-                break;
-
-            case Thu:
-                printf("Thursday.\n");
-                break;
-
-            case Fri:
-                printf("Friday.\n");
-                break;
-
-        }
+        printf("\n");
 
         Sleep(3000);
         break;
@@ -1534,6 +1717,84 @@ void Main_Func_Get_User_Date() {
 
     } // while end
 
+
+}
+
+
+
+void Print_WeekDay(int d) {
+    
+    switch (d) {
+           
+        case 0:
+            printf("Saturday");
+            break;
+        case 1:
+            printf("Sunday");
+            break;
+        case 2:
+            printf("Monday");
+            break;
+        case 3:
+            printf("Tuesday");
+            break;
+        case 4:
+            printf("Wednesday");
+            break;
+        case 5:
+            printf("Thursday");
+            break;
+        case 6:
+            printf("Friday");
+            break;
+
+    }
+
+}
+
+
+
+void Print_Month(int m) {
+
+    switch (m) {
+
+        case 1:
+            printf("Farvardin");
+            break;
+        case 2:
+            printf("Ordibehesht");
+            break;
+        case 3:
+            printf("Khordad");
+            break;
+        case 4:
+            printf("Tir");
+            break;
+        case 5:
+            printf("Mordad");
+            break;
+        case 6:
+            printf("Shahrivar");
+            break;
+        case 7:
+            printf("Mehr");
+            break;
+        case 8:
+            printf("Aban");
+            break;
+        case 9:
+            printf("Azar");
+            break;
+        case 10:
+            printf("Dei");
+            break;
+        case 11:
+            printf("Bahman");
+            break;
+        case 12:
+            printf("Esfand");
+            break;
+    }
 
 }
 
