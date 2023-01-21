@@ -103,6 +103,8 @@ typedef struct date {
 char calendar_in_path[] = "Calendar.bin";
 int Active_Calendar = 0;
 date Date_Start_Cal;
+date Date_Start_Cal_Next = {0, 0, 0, 0};
+date Date_Start_Cal_Last = {0, 0, 0, 0};
 date Date_Login; 
 
 
@@ -927,6 +929,86 @@ void AP_Patients_List() {
 void AP_Monthly_Schedule() {
 
 
+    if (Active_Calendar == 1) {
+
+        if (Date_Login.y > Date_Start_Cal.y && !( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1 ) ) {
+            Bar_Status(1);
+            printf("%sIn The Month, The Program Calendar is Not Set (Year)%s\n", Color_Red, Color_Reset);
+            Sleep(5000);
+            Active_Calendar = 0;
+        }
+
+
+        else if (Date_Login.m == Date_Start_Cal.m + 1 || ( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1) ) {
+            
+            if (Date_Start_Cal_Next.y == 0 && Date_Start_Cal_Next.m == 0 && Date_Start_Cal_Next.d == 0) {
+                
+                Bar_Status(1);
+                printf("%sIn The Month, The Program Calendar is Not Set (No Next)%s\n", Color_Red, Color_Reset);
+                Sleep(5000);
+
+                Date_Start_Cal_Last.y = Date_Start_Cal.y;
+                Date_Start_Cal_Last.m = Date_Start_Cal.m;
+                Date_Start_Cal_Last.d = Date_Start_Cal.d;
+                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
+
+                Active_Calendar = 0;
+
+            }
+
+            else {
+
+                Bar_Status(1);
+                printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
+
+                Bar_Status(1);
+                printf("Last Month\n");
+                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                Date_Start_Cal_Last.y = Date_Start_Cal.y;
+                Date_Start_Cal_Last.m = Date_Start_Cal.m;
+                Date_Start_Cal_Last.d = Date_Start_Cal.d;
+                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
+
+                Date_Start_Cal.y = Date_Start_Cal_Next.y;
+                Date_Start_Cal.m = Date_Start_Cal_Next.m;
+                Date_Start_Cal.d = Date_Start_Cal_Next.d;
+                Date_Start_Cal.week_d = Date_Start_Cal_Next.week_d;
+
+                Date_Start_Cal_Next.y = 0;
+                Date_Start_Cal_Next.m = 0;
+                Date_Start_Cal_Next.d = 0;
+                Date_Start_Cal_Next.week_d = 0;
+
+                Bar_Status(1);
+                printf("Next Month\n");
+                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                Sleep(5000);
+            
+            }
+
+        }
+
+        else if (Date_Login.m > Date_Start_Cal.m) {
+            Bar_Status(1);
+            printf("%sIn The Month, The Program Calendar is Not Set (Month)%s\n", Color_Red, Color_Reset);
+            Sleep(5000);
+            Active_Calendar = 0;
+        }
+
+
+        if (Active_Calendar == 1 && Date_Start_Cal.d - Date_Login.d < 10) {
+            Bar_Status(1);
+            printf("%sThe Next Month is Near, don't Forgot to Define it.%s\n", Color_Yellow, Color_Reset);
+            Sleep(5000);
+        }
+
+
+    } // if end 
+
+
+
     if (Active_Calendar == 0) {
 
         while(1) {
@@ -1027,6 +1109,11 @@ void AP_Monthly_Schedule() {
             Date_Start_Cal.m = month_in;
             Date_Start_Cal.d = day_in;
             Date_Start_Cal.week_d = week_day_in;
+            
+            Date_Start_Cal_Next.y = 0;
+            Date_Start_Cal_Next.m = 0;
+            Date_Start_Cal_Next.d = 0;
+            Date_Start_Cal_Next.week_d = 0;
 
             Active_Calendar = 1;
             Update_Files();
@@ -1045,8 +1132,6 @@ void AP_Monthly_Schedule() {
     } // if end 
 
 
-    else {}
-
     
     // menu
     while(1) {
@@ -1057,19 +1142,45 @@ void AP_Monthly_Schedule() {
 
         Bar_Status(1);
         printf("Monthly Schedule\n\n");
-        printf("    %s1 %s> %sSign In\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s2 %s> %sForgot PassWord\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s1 %s> %sSet Off Date\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sSet Next Month Calendar\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sBack Admin Panel\n", Color_Yellow, Color_Aqua, Color_Reset);
 
         Sleep(500);
 
         Bar_Status(1);
         printf("Select one More: ");
 
-        int in_code = User_Input_Number_Range(1, 2);
+        int in_code = User_Input_Number_Range(1, 3);
 
         Sleep(500);
 
-        printf("pekh");
+        switch (in_code) {
+            
+            case -1:
+                continue;
+                
+            case -2:
+                printf("Back\n");
+                Sleep(1500);
+                break;
+
+            case 3:    
+                Bar_Status(1);
+                printf("Back\n");
+                Sleep(1500);        
+                break;
+
+
+            case 1:
+
+
+            case 2:
+                Sleep(3000);
+                break;
+
+
+        }
 
         break;
 
@@ -1082,7 +1193,7 @@ void AP_Monthly_Schedule() {
 
 void Print_Calendar(int y, int m, int d, int week_d) {
 
-    printf("    %s>>> ", Color_Green);
+    printf("\n    %s>>> ", Color_Green);
 
     Print_Month(m);
 
@@ -1169,7 +1280,9 @@ void Get_Files() {
 
     if (fp_Date != NULL) {
         
+        Active_Calendar = fread(&Date_Start_Cal_Last, sizeof(date), 1, fp_Date);
         Active_Calendar = fread(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+        Active_Calendar = fread(&Date_Start_Cal_Next, sizeof(date), 1, fp_Date);
 
         printf("The file information was read successfully, Date Start Cal\n");
 
@@ -1231,7 +1344,9 @@ void Update_Files() {
 
         if (fp_Date != NULL) {
             
+            fwrite(&Date_Start_Cal_Last, sizeof(date), 1, fp_Date);
             fwrite(&Date_Start_Cal, sizeof(date), 1, fp_Date);
+            fwrite(&Date_Start_Cal_Next, sizeof(date), 1, fp_Date);
 
         }
 
@@ -1685,31 +1800,28 @@ void Main_Func_Get_User_Date() {
         }
 
 
-        // Bar_Status(0);
-        // printf("WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
+        int flag_bad_date = 0;
 
-        // int week_day_in = User_Input_Number_Range(0, 6);
+        if (year_in < Date_Start_Cal.y) flag_bad_date = 1;
 
-        // if (week_day_in == -1) continue;
+        else if (year_in == Date_Start_Cal.y && month_in < Date_Start_Cal.m ) flag_bad_date = 1;
+        
+        else if (year_in == Date_Start_Cal.y && month_in == Date_Start_Cal.m && day_in < Date_Start_Cal.d) flag_bad_date = 1;
 
-        // if (week_day_in == -2) {
-        //     printf("\n");
-        //     Exit_Function(0, 0);
-        //     break;
-        // }
+
+        // Bad Date
+        if (flag_bad_date) {
+            Bar_Status(0);
+            printf("%sError:%s The Entered Date is before the Calendar Date.\n", Color_Red, Color_Reset);
+            Sleep(5000);
+            continue;
+        }
+
 
         Date_Login.y = year_in;
         Date_Login.m = month_in;
         Date_Login.d = day_in;
-        // Date_Login.week_d = week_day_in;
-        
-        Bar_Status(0);
-        printf("Login Date: %d/%d/%d", Date_Login.y, Date_Login.m, Date_Login.d);
 
-        // printf(", ");
-        // Print_WeekDay(Date_Login.week_d);
-
-        printf("\n");
 
         Sleep(3000);
         break;
