@@ -928,6 +928,7 @@ void AP_Patients_List() {
 
 void AP_Monthly_Schedule() {
 
+    RUN_CLS;
 
     if (Active_Calendar == 1) {
 
@@ -1098,8 +1099,6 @@ void AP_Monthly_Schedule() {
             if (week_day_in == -1) continue;
 
             if (week_day_in == -2) {
-                printf("\n");
-                Bar_Status(1);
                 printf("Back To Admin Panel\n");
                 Sleep(3000);
                 return;
@@ -1168,15 +1167,159 @@ void AP_Monthly_Schedule() {
             case 3:    
                 Bar_Status(1);
                 printf("Back\n");
-                Sleep(1500);        
+                Sleep(1500);
                 break;
 
 
             case 1:
-
+                printf("1");
+                Sleep(2000);
+                break;
 
             case 2:
-                Sleep(3000);
+
+                if (Date_Start_Cal_Next.y != 0 && Date_Start_Cal_Next.m != 0 && Date_Start_Cal_Next.d != 0) {
+                    
+                    Bar_Status(1);
+                    printf("The next month is already defined. Would you like to redefine it(y/n)? (s ~ see): ");
+
+                    int y = getch();
+                    printf("%c\n", (char)y );
+
+                    if (y == 's' || y == 'S') {
+                        Print_Calendar(Date_Start_Cal_Next.y, Date_Start_Cal_Next.m, Date_Start_Cal_Next.d, Date_Start_Cal_Next.week_d);
+                        Sleep(5000);
+                        break;
+
+                    }
+
+                    else if (y != 'y' && y != 'Y') {
+                        Bar_Status(1);
+                        printf("Back To Admin Panel\n");
+                        Sleep(3000);
+                        return;
+                    }
+
+
+                }
+
+
+                while(1) {
+                    
+                    //* set calendar for next month
+
+                    RUN_CLS;
+
+                    Bar_Status(1);
+                    printf("Set Next Month Calendar (Ctrl+C ~ Back to Admin Panel)\n");
+
+                    int year_in = (Date_Start_Cal.m == 12)?(Date_Start_Cal.y + 1):(Date_Start_Cal.y);
+                    
+                    int month_in = (Date_Start_Cal.m == 12)?(1):(Date_Start_Cal.m + 1);
+
+                    Bar_Status(1);
+                    printf("Set Calendar For %d/%d\n", year_in, month_in);
+                    
+                    Bar_Status(1);
+                    printf("Set Day Auto? (y ~ Yes / To Cancel, Press Another Key): ");
+
+                    int x = getch();
+                    printf("%c\n", (char)x);
+
+                    int day_in;
+                    if (x == 'y' || x == 'Y') {
+
+                        if (1 <= month_in && month_in <= 6) day_in = 31;
+
+                        else if (7 <= month_in && month_in <= 11) day_in = 30;
+
+                        else if (month_in == 12) {
+                            
+                            if ((year_in - 1399) % 4 == 0) day_in = 30;
+
+                            else day_in = 29;
+
+                        }
+
+                    }
+
+                    else {
+
+                        Bar_Status(1);
+                        printf("Day Count: ");
+
+                        day_in = User_Input_Number_Range(1, 31);
+
+                        if (day_in == -1) continue;
+
+                        if (day_in == -2) {
+                            printf("Back To Admin Panel\n");
+                            Sleep(3000);
+                            return;
+                        }
+
+                    }
+
+                    Bar_Status(1);
+                    printf("Set Start WeekDay Auto? (y ~ Yes / To Cancel, Press Another Key): ");
+
+                    x = getch();
+                    printf("%c\n", (char)x);
+
+                    int week_day_in;
+                    if (x == 'y' || x == 'Y') {
+                        week_day_in = Date_Start_Cal.d % 7 + Date_Start_Cal.week_d;
+                        
+                        Bar_Status(1);
+                        printf("Next Month Start Weekday (SYS AUTO): ");
+                        Print_WeekDay(week_day_in);
+                        printf("\n");
+                    }
+
+                    else {
+
+                        Bar_Status(1);
+                        printf("Start WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
+
+                        week_day_in = User_Input_Number_Range(0, 6);
+
+                        if (week_day_in == -1) continue;
+
+                        if (week_day_in == -2) {
+                            printf("Back To Admin Panel\n");
+                            Sleep(3000);
+                            return;
+                        }
+
+                    }
+
+                    Date_Start_Cal_Next.y = year_in;
+                    Date_Start_Cal_Next.m = month_in;
+                    Date_Start_Cal_Next.d = day_in;
+                    Date_Start_Cal_Next.week_d = week_day_in;
+
+                    Update_Files();
+
+                    Bar_Status(1);
+                    printf("The App Calendar has been Set Successfully. (N-M)");
+                    printf("(Y~%d M~%d D-C~%d W-D~%d)\n", year_in, month_in, day_in, week_day_in);
+
+                    Sleep(3000);
+                    
+                    RUN_CLS;
+
+                    Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                    Print_Calendar(Date_Start_Cal_Next.y, Date_Start_Cal_Next.m, Date_Start_Cal_Next.d, Date_Start_Cal_Next.week_d);
+
+                    Sleep(5000);
+
+                    break;
+
+
+                } // while end ~ set calendar
+
+
                 break;
 
 
@@ -1255,6 +1398,8 @@ void Get_Files() {
     fclose(fp_Doctor);
 
 
+    printf("------------------------------\n");
+
 
     // Get Patients
     FILE *fp_Patient = fopen(patient_file_path, "rb");
@@ -1274,6 +1419,8 @@ void Get_Files() {
     fclose(fp_Patient);
 
 
+    printf("------------------------------\n");
+
 
     // Get Date
     FILE *fp_Date = fopen(calendar_in_path, "rb");
@@ -1285,6 +1432,9 @@ void Get_Files() {
         Active_Calendar = fread(&Date_Start_Cal_Next, sizeof(date), 1, fp_Date);
 
         printf("The file information was read successfully, Date Start Cal\n");
+        printf("Date_Start_Cal_Last: %d ~ %d ~ %d\n", Date_Start_Cal_Last.y, Date_Start_Cal_Last.m, Date_Start_Cal_Last.d);
+        printf("Date_Start_Cal: %d ~ %d ~ %d\n", Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d);
+        printf("Date_Start_Cal_Next: %d ~ %d ~ %d\n", Date_Start_Cal_Next.y, Date_Start_Cal_Next.m, Date_Start_Cal_Next.d);
 
     }
 
@@ -1292,6 +1442,8 @@ void Get_Files() {
 
     fclose(fp_Date);
 
+
+    printf("------------------------------\n");
 
 
     Sleep(5000);
@@ -1805,8 +1957,6 @@ void Main_Func_Get_User_Date() {
         if (year_in < Date_Start_Cal.y) flag_bad_date = 1;
 
         else if (year_in == Date_Start_Cal.y && month_in < Date_Start_Cal.m ) flag_bad_date = 1;
-        
-        else if (year_in == Date_Start_Cal.y && month_in == Date_Start_Cal.m && day_in < Date_Start_Cal.d) flag_bad_date = 1;
 
 
         // Bad Date
