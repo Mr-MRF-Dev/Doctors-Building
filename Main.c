@@ -124,9 +124,9 @@ off_date Cal_Off_Date[OFF_DATE_MAX_COUNT];
 //** Functions
 void Sign_In_Function();
 void Forgot_Password_Function();
-void Exit_Function(int bar_status_code, int exit_code);
+void Exit_Function(int bar_status_code, int exit_code, int login_code);
 
-void Bar_Status(int login);
+void Bar_Status(int login, int id);
 void Main_Func_Get_User_Date();
 
 void Admin_Panel();
@@ -135,6 +135,8 @@ void AP_Doctors_List();
 void AP_Add_Patient();
 void AP_Patients_List();
 void AP_Monthly_Schedule();
+
+void Doctor_Panel(int doc_login_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -164,7 +166,7 @@ int main() {
     }
 
     else {
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
         Sleep(5000);
     }
@@ -173,7 +175,7 @@ int main() {
 
         RUN_CLS;
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Home Page:\n\n");
         printf("    %s1 %s> %sSign In\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sForgot PassWord\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -181,7 +183,7 @@ int main() {
 
         Sleep(500);
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Select one More: ");
 
         int in_code = User_Input_Number_Range(1, 3);
@@ -193,7 +195,7 @@ int main() {
             // ctrl + c exit code 
             case -2:
                 printf("Run Exit Function.\n");
-                Exit_Function(0, 0);
+                Exit_Function(0, 0, 0);
                 break;
 
             case -1: // Error input
@@ -208,7 +210,7 @@ int main() {
                 break;
             
             case 3:
-                Exit_Function(0, 0);
+                Exit_Function(0, 0, 0);
                 return 0;
                 break;
             
@@ -230,10 +232,10 @@ void Sign_In_Function() {
         
         RUN_CLS;
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Sign In (Ctrl+C ~ Back)\n");
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Enter Your UserName: ");
 
         // UserName is National Code or 'Admin'
@@ -249,7 +251,7 @@ void Sign_In_Function() {
 
         if (UserInt == -1) continue;
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Enter Your PassWord: ");
 
         char PassWordInput[PASSWORD_SIZE];
@@ -267,7 +269,7 @@ void Sign_In_Function() {
         // Admin Login Panel
         if (strcmp(PassWordInput, "Admin") == 0 && strcmp(UserNameInput, "Admin") == 0) {
             
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Login was Successful ~ %sAdmin%s\n", Color_Red, Color_Reset);
             
             Sleep(1500);
@@ -277,7 +279,7 @@ void Sign_In_Function() {
 
         else if(strcmp(PassWordInput, "admin") == 0 && strcmp(UserNameInput, "admin") == 0) {
             
-            Bar_Status(0);
+            Bar_Status(0, 0);
             printf("Do You Mean %sAdmin%s ? Try Again.\n", Color_Red, Color_Reset);
             Sleep(3000);
             continue;
@@ -291,8 +293,10 @@ void Sign_In_Function() {
 
                 if (strcmp(UserNameInput, Doctors[i].code_n) == 0 && strcmp(PassWordInput, Doctors[i].password) == 0 ) {
 
-                    printf("doctoc panel %d", i);
-                    Sleep(3000);
+                    Bar_Status(2, i);
+                    printf("Login was Successful ~ %s%s%s\n", Color_Green, Doctors[i].name, Color_Reset);
+                    Sleep(1500);
+                    Doctor_Panel(i);
                     return;
 
                 }
@@ -314,7 +318,7 @@ void Sign_In_Function() {
             }
 
 
-            Bar_Status(0);
+            Bar_Status(0, 0);
             printf("The Username or Password is incorrect!\n");
             Sleep(5000);
             continue;
@@ -340,10 +344,10 @@ void Forgot_Password_Function() {
         
         RUN_CLS;
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Forgot PassWord (Ctrl+C ~ Back)\n");
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Enter Your UserName: ");
 
         // UserName is National Code or 'Admin'
@@ -359,7 +363,7 @@ void Forgot_Password_Function() {
             return;
         }
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Enter Your Email: ");
 
         char EmailInput[EMAIL_SIZE];
@@ -377,7 +381,7 @@ void Forgot_Password_Function() {
         // Admin Login Panel
         if (strcmp(UserNameInput, "Admin") == 0) {
             
-            Bar_Status(0);
+            Bar_Status(0, 0);
             printf("Admin PassWord is: '%sAdmin%s' :/\n", Color_Red, Color_Reset);
             Sleep(3000);
         }
@@ -391,7 +395,7 @@ void Forgot_Password_Function() {
                     
                     while(1) {
 
-                        Bar_Status(0);
+                        Bar_Status(0, 0);
                         printf("Enter New PassWord (Ctrl+C ~ Cancel): ");
 
                         char PassWordInput[PASSWORD_SIZE];
@@ -408,7 +412,7 @@ void Forgot_Password_Function() {
                         strcpy(Doctors[i].password, PassWordInput);
                         Update_Files();
 
-                        Bar_Status(0);
+                        Bar_Status(0, 0);
                         printf("The password was changed.\n");
                         Sleep(3000);
                         return;
@@ -427,7 +431,7 @@ void Forgot_Password_Function() {
                     
                     while(1) {
 
-                        Bar_Status(0);
+                        Bar_Status(0, 0);
                         printf("Enter New PassWord (Ctrl+C ~ Cancel): ");
 
                         char PassWordInput[PASSWORD_SIZE];
@@ -444,7 +448,7 @@ void Forgot_Password_Function() {
                         strcpy(Patients[i].password, PassWordInput);
                         Update_Files();
 
-                        Bar_Status(0);
+                        Bar_Status(0, 0);
                         printf("The password was changed.\n");
                         Sleep(3000);
                         return;
@@ -455,7 +459,7 @@ void Forgot_Password_Function() {
             } // for pat end
 
 
-            Bar_Status(0);
+            Bar_Status(0, 0);
             printf("User With this Username and Email was Not Found!\n");
             Sleep(5000);
             continue;
@@ -472,7 +476,7 @@ void Forgot_Password_Function() {
 
 
 
-void Bar_Status(int login) {
+void Bar_Status(int login, int id) {
     
     if (login == 0) {
         printf("\n%s! Login ! %s>>> %s", Color_Yellow, Color_Aqua, Color_Reset);
@@ -483,10 +487,10 @@ void Bar_Status(int login) {
         printf("\n%s#A%s %s %s>>> %s", Color_Blue, Color_Red, "Admin", Color_Aqua, Color_Reset);
     }
     
-    // //login as player
-    // else if (login == 1) {
-    //     printf("\n%s#%d%s %s %s>>> %s", Color_Blue, User->id, Color_Green, User->Username, Color_Aqua, Color_Reset);
-    // }
+    //login as doctor
+    else if (login == 2) {
+        printf("\n%s#D%d%s %s %s>>> %s", Color_Blue, id, Color_Green, Doctors[id].name , Color_Aqua, Color_Reset);
+    }
 
 
 }
@@ -499,7 +503,7 @@ void Admin_Panel() {
         
         RUN_CLS;
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Admin Panel:\n\n");
         printf("    %s1 %s> %sAdd Doctor\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sDoctors List\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -511,7 +515,7 @@ void Admin_Panel() {
 
         Sleep(500);
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Select one More: ");
 
         int AdminInput = User_Input_Number_Range(1, 7);
@@ -523,7 +527,7 @@ void Admin_Panel() {
         if (AdminInput == -2) {
             // ctrl + c ~ code -2
             printf("Run Exit Function.\n");
-            Exit_Function(1, 0);
+            Exit_Function(1, 0, 0);
         }
 
         switch (AdminInput) {
@@ -553,7 +557,7 @@ void Admin_Panel() {
                 break;
             
             case 7:
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("logout Successful.\n");
                 Sleep(2000);
                 return;
@@ -580,12 +584,12 @@ void AP_Add_Doctor() {
 
         int str_func_return_code = 0;
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Add Doctor (Ctrl + C ~ Back to Admin Panel)\n");
 
         if (doctor_count == DOCTOR_MAX_COUNT) {
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("There is no vacant office in the building :')\n");
 
             Sleep(3000);
@@ -595,7 +599,7 @@ void AP_Add_Doctor() {
         }
 
         // get name
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Doctor Name: ");
 
         str_func_return_code = User_Input_String(doc.name, NAME_SIZE, 0);
@@ -609,7 +613,7 @@ void AP_Add_Doctor() {
         }
 
         // get email
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Doctor Email: ");
 
         str_func_return_code = User_Input_String(doc.email, EMAIL_SIZE, 0);
@@ -624,7 +628,7 @@ void AP_Add_Doctor() {
 
 
         // get National Code
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Doctor National Code: ");
 
         str_func_return_code = User_Input_String(doc.code_n, NATIONAL_CODE_SIZE, 1);
@@ -639,7 +643,7 @@ void AP_Add_Doctor() {
 
 
         // get password
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Doctor Password: ");
 
         str_func_return_code = User_Input_PassWord(doc.password, PASSWORD_SIZE);
@@ -766,12 +770,12 @@ void AP_Add_Patient() {
 
         int str_func_return_code = 0;
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Add Patient (Ctrl + C ~ Back to Admin Panel)\n");
 
         if (patient_count == PATIENT_MAX_COUNT) {
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("The capacity of patients is completed :')\n");
 
             Sleep(3000);
@@ -781,7 +785,7 @@ void AP_Add_Patient() {
         }
 
         // get name
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Patient Name: ");
 
         str_func_return_code = User_Input_String(pat.name, NAME_SIZE, 0);
@@ -795,7 +799,7 @@ void AP_Add_Patient() {
         }
 
         // get email
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Patient Email: ");
 
         str_func_return_code = User_Input_String(pat.email, EMAIL_SIZE, 0);
@@ -810,7 +814,7 @@ void AP_Add_Patient() {
 
 
         // get National Code
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Patient National Code: ");
 
         str_func_return_code = User_Input_String(pat.code_n, NATIONAL_CODE_SIZE, 1);
@@ -825,7 +829,7 @@ void AP_Add_Patient() {
 
 
         // get password
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Enter Patient Password: ");
 
         str_func_return_code = User_Input_PassWord(pat.password, PASSWORD_SIZE);
@@ -945,7 +949,7 @@ void AP_Monthly_Schedule() {
     if (Active_Calendar == 1) {
 
         if (Date_Login.y > Date_Start_Cal.y && !( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1 ) ) {
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("%sIn The Month, The Program Calendar is Not Set (Year)%s\n", Color_Red, Color_Reset);
             Sleep(5000);
             Active_Calendar = 0;
@@ -956,7 +960,7 @@ void AP_Monthly_Schedule() {
             
             if (Date_Start_Cal_Next.y == 0 && Date_Start_Cal_Next.m == 0 && Date_Start_Cal_Next.d == 0) {
                 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("%sIn The Month, The Program Calendar is Not Set (No Next)%s\n", Color_Red, Color_Reset);
                 Sleep(5000);
 
@@ -971,7 +975,7 @@ void AP_Monthly_Schedule() {
 
             else {
 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
 
                 Date_Start_Cal_Last.y = Date_Start_Cal.y;
@@ -979,7 +983,7 @@ void AP_Monthly_Schedule() {
                 Date_Start_Cal_Last.d = Date_Start_Cal.d;
                 Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
                 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("Last Month\n");
                 Print_Calendar(Date_Start_Cal_Last.y, Date_Start_Cal_Last.m, Date_Start_Cal_Last.d, Date_Start_Cal_Last.week_d);
 
@@ -993,7 +997,7 @@ void AP_Monthly_Schedule() {
                 Date_Start_Cal_Next.d = 0;
                 Date_Start_Cal_Next.week_d = 0;
 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("Next Month\n");
                 Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
 
@@ -1009,7 +1013,7 @@ void AP_Monthly_Schedule() {
         }
 
         else if (Date_Login.m > Date_Start_Cal.m) {
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("%sIn The Month, The Program Calendar is Not Set (Month)%s\n", Color_Red, Color_Reset);
             Sleep(5000);
             Active_Calendar = 0;
@@ -1017,7 +1021,7 @@ void AP_Monthly_Schedule() {
 
 
         if (Active_Calendar == 1 && Date_Start_Cal.d - Date_Login.d < 10) {
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("%sThe Next Month is Near, don't Forgot to Define it.%s\n", Color_Yellow, Color_Reset);
             Sleep(5000);
         }
@@ -1035,10 +1039,10 @@ void AP_Monthly_Schedule() {
 
             RUN_CLS;
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Set Calendar (Ctrl+C ~ Back to Admin Panel)\n");
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Year: ");
             
             int year_in = User_Input_Number_Range(1, 9999);
@@ -1052,7 +1056,7 @@ void AP_Monthly_Schedule() {
             }
 
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Month: ");
             
             int month_in = User_Input_Number_Range(1, 12);
@@ -1066,7 +1070,7 @@ void AP_Monthly_Schedule() {
             }
 
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Set Day Auto ? (y ~ Yes / To Cancel, Press Another Key): ");
 
             int x = getch();
@@ -1092,7 +1096,7 @@ void AP_Monthly_Schedule() {
 
             else {
 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("Day Count: ");
 
                 day_in = User_Input_Number_Range(1, 31);
@@ -1108,7 +1112,7 @@ void AP_Monthly_Schedule() {
             }
 
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("Start WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
 
             int week_day_in = User_Input_Number_Range(0, 6);
@@ -1136,7 +1140,7 @@ void AP_Monthly_Schedule() {
             Update_Files();
 
 
-            Bar_Status(1);
+            Bar_Status(1, 0);
             printf("The App Calendar has been Set Successfully. ");
             printf("(Y~%d M~%d D-C~%d W-D~%d)\n", Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
             Sleep(5000);
@@ -1159,7 +1163,7 @@ void AP_Monthly_Schedule() {
 
         Print_Off_Date();
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Monthly Schedule\n\n");
         printf("    %s1 %s> %sSet Off Date\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sSet Next Month Calendar\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -1167,7 +1171,7 @@ void AP_Monthly_Schedule() {
 
         Sleep(500);
 
-        Bar_Status(1);
+        Bar_Status(1, 0);
         printf("Select one More: ");
 
         int in_code = User_Input_Number_Range(1, 3);
@@ -1185,7 +1189,7 @@ void AP_Monthly_Schedule() {
                 break;
 
             case 3:    
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("Back\n");
                 Sleep(1500);
                 break;
@@ -1193,13 +1197,13 @@ void AP_Monthly_Schedule() {
 
             case 1:
 
-                Bar_Status(1);
+                Bar_Status(1, 0);
                 printf("How Many Days do you Want to Declare a Holiday?: ");
 
                 int get_off_date_record = User_Input_Number_Range(0, Date_Start_Cal.d);
                 
                 if (get_off_date_record == -1) {
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Back\n");
                     Sleep(1500);
                     break;
@@ -1213,7 +1217,7 @@ void AP_Monthly_Schedule() {
                 }
 
                 if (get_off_date_record == 0) {
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Ok :/ You Curse Me, Are you Making Fun of Me :/ ( 30 sec Sleep :) )\n ");
                     Sleep(30000);
                     break;
@@ -1226,11 +1230,11 @@ void AP_Monthly_Schedule() {
 
                     Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Enter the Data Related to the %s%d Record%s: (Ctrl + C ~ Back)\n", Color_Yellow, i+1, Color_Reset);
 
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Enter Date (day): ");
 
                     int input_day = User_Input_Number_Range(0, Date_Start_Cal.d);
@@ -1249,7 +1253,7 @@ void AP_Monthly_Schedule() {
                         
                         if (tmp == 6) {
                             if (i == input_day) {
-                                Bar_Status(1);
+                                Bar_Status(1, 0);
                                 printf("The Selected Day is Friday.\n");
                                 flag_found = 1;
                                 Sleep(3000);
@@ -1265,7 +1269,7 @@ void AP_Monthly_Schedule() {
                     for (int i =0; i < Cal_Off_Date_Count; i++) {
                         if (Cal_Off_Date[i].Date.d == input_day) {
 
-                            Bar_Status(1);
+                            Bar_Status(1, 0);
                             printf("The Selected Day is Holiday.\n");
                             flag_found = 1;
                             Sleep(3000);
@@ -1277,7 +1281,7 @@ void AP_Monthly_Schedule() {
                     if (flag_found) continue;
 
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("What is the Reason for the Closure? ~ ");
                     
                     char temp_char_r[101];
@@ -1299,7 +1303,7 @@ void AP_Monthly_Schedule() {
 
                     Update_Files();
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Holiday Added Successfully (%s%d Record%s)\n", Color_Green, i+1, Color_Reset);
                     Sleep(3000);
 
@@ -1312,7 +1316,7 @@ void AP_Monthly_Schedule() {
 
                 if (Date_Start_Cal_Next.y != 0 && Date_Start_Cal_Next.m != 0 && Date_Start_Cal_Next.d != 0) {
                     
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("The next month is already defined. Would you like to redefine it(y/n)? (s ~ See): ");
 
                     int y = getch();
@@ -1326,7 +1330,7 @@ void AP_Monthly_Schedule() {
                     }
 
                     else if (y != 'y' && y != 'Y') {
-                        Bar_Status(1);
+                        Bar_Status(1, 0);
                         printf("Back To Admin Panel\n");
                         Sleep(3000);
                         return;
@@ -1342,17 +1346,17 @@ void AP_Monthly_Schedule() {
 
                     RUN_CLS;
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Set Next Month Calendar (Ctrl+C ~ Back to Admin Panel)\n");
 
                     int year_in = (Date_Start_Cal.m == 12)?(Date_Start_Cal.y + 1):(Date_Start_Cal.y);
                     
                     int month_in = (Date_Start_Cal.m == 12)?(1):(Date_Start_Cal.m + 1);
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Set Calendar For %d/%d\n", year_in, month_in);
                     
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Set Day Auto? (y ~ Yes / To Cancel, Press Another Key): ");
 
                     int x = getch();
@@ -1377,7 +1381,7 @@ void AP_Monthly_Schedule() {
 
                     else {
 
-                        Bar_Status(1);
+                        Bar_Status(1, 0);
                         printf("Day Count: ");
 
                         day_in = User_Input_Number_Range(1, 31);
@@ -1392,7 +1396,7 @@ void AP_Monthly_Schedule() {
 
                     }
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("Set Start WeekDay Auto? (y ~ Yes / To Cancel, Press Another Key): ");
 
                     x = getch();
@@ -1402,7 +1406,7 @@ void AP_Monthly_Schedule() {
                     if (x == 'y' || x == 'Y') {
                         week_day_in = Date_Start_Cal.d % 7 + Date_Start_Cal.week_d;
                         
-                        Bar_Status(1);
+                        Bar_Status(1, 0);
                         printf("Next Month Start Weekday (SYS AUTO): ");
                         Print_WeekDay(week_day_in);
                         printf("\n");
@@ -1410,7 +1414,7 @@ void AP_Monthly_Schedule() {
 
                     else {
 
-                        Bar_Status(1);
+                        Bar_Status(1, 0);
                         printf("Start WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
 
                         week_day_in = User_Input_Number_Range(0, 6);
@@ -1432,7 +1436,7 @@ void AP_Monthly_Schedule() {
 
                     Update_Files();
 
-                    Bar_Status(1);
+                    Bar_Status(1, 0);
                     printf("The App Calendar has been Set Successfully. (N-M)");
                     printf("(Y~%d M~%d D-C~%d W-D~%d)\n", year_in, month_in, day_in, week_day_in);
 
@@ -1461,6 +1465,77 @@ void AP_Monthly_Schedule() {
 
     }
 
+
+}
+
+
+
+void Doctor_Panel(int doc_login_id) {
+    
+    while (1) {
+        
+        RUN_CLS;
+
+        Bar_Status(2, doc_login_id);
+        printf("Doctor Panel:\n\n");
+        printf("    %s1 %s> %sDetermining The Shifts\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sReserved Visits\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sPatient Prescription\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sRent Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sVisirs Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s6 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(2, doc_login_id);
+        printf("Select one More: ");
+
+        int DocInput = User_Input_Number_Range(1, 6);
+
+        Sleep(500);
+
+        if (DocInput == -1) continue;
+
+        if (DocInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Run Exit Function.\n");
+            Exit_Function(2, 0, doc_login_id);
+        }
+
+        switch (DocInput) {
+        
+            case 1:
+                // 
+                break;
+            
+            case 2:
+                // 
+                break;
+            
+            case 3:
+                // 
+                break;
+            
+            case 4:
+                // 
+                break;
+            
+            case 5:
+                //
+                break;
+            
+            case 6:
+                Bar_Status(2, doc_login_id);
+                printf("logout Successful.\n");
+                Sleep(2000);
+                return;
+                break;
+            
+
+        } // switch end
+    
+
+    } // while end
 
 }
 
@@ -2095,9 +2170,9 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
 
 
-void Exit_Function(int bar_status_code, int exit_code) {
+void Exit_Function(int bar_status_code, int exit_code, int login_code) {
     
-    Bar_Status(bar_status_code);
+    Bar_Status(bar_status_code, login_code);
     printf("%sExit%s :) %sBye Bye.%s\n",Color_Red, Color_Yellow, Color_Gray, Color_Reset);
     Sleep(3000);
 
@@ -2115,11 +2190,11 @@ void Main_Func_Get_User_Date() {
 
         RUN_CLS;
         
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Enter Today's Date (Ctrl+C ~ Exit)\n");
 
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Year: ");
         
         int year_in = User_Input_Number_Range(1, 9999);
@@ -2128,12 +2203,12 @@ void Main_Func_Get_User_Date() {
 
         if (year_in == -2) {
             printf("\n");
-            Exit_Function(0, 0);
+            Exit_Function(0, 0, 0);
             break;
         }
 
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Month: ");
         
         int month_in = User_Input_Number_Range(1, 12);
@@ -2142,12 +2217,12 @@ void Main_Func_Get_User_Date() {
 
         if (month_in == -2) {
             printf("\n");
-            Exit_Function(0, 0);
+            Exit_Function(0, 0, 0);
             break;
         }
 
 
-        Bar_Status(0);
+        Bar_Status(0, 0);
         printf("Day: ");
 
         int day_in = User_Input_Number_Range(1, 31);
@@ -2156,7 +2231,7 @@ void Main_Func_Get_User_Date() {
 
         if (day_in == -2) {
             printf("\n");
-            Exit_Function(0, 0);
+            Exit_Function(0, 0, 0);
             break;
         }
 
@@ -2170,7 +2245,7 @@ void Main_Func_Get_User_Date() {
 
         // Bad Date
         if (flag_bad_date) {
-            Bar_Status(0);
+            Bar_Status(0, 0);
             printf("%sError:%s The Entered Date is before the Calendar Date.\n", Color_Red, Color_Reset);
             Sleep(5000);
             continue;
