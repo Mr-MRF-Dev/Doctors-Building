@@ -40,7 +40,7 @@ int run_cls = 1;
 // file Error Management
 // Hash PassWord
 // 
-
+// reset all 
 
 
 //** Define Const Num
@@ -52,41 +52,6 @@ int run_cls = 1;
 
 
 //** Data:
-
-//* Doctor
-typedef struct doctor {
-    int id;
-    int wallet;
-    char name[NAME_SIZE];
-    char email[EMAIL_SIZE];
-    char code_n[NATIONAL_CODE_SIZE];
-    char password[PASSWORD_SIZE];
-
-} doctor;
-
-int doctor_count = 0;
-#define DOCTOR_MAX_COUNT 50
-doctor Doctors[DOCTOR_MAX_COUNT];
-char doctor_file_path[] = "doctor.bin";
-
-
-
-//* Patient
-typedef struct patient {
-    int id;
-    char name[NAME_SIZE];
-    char email[EMAIL_SIZE];
-    char code_n[NATIONAL_CODE_SIZE];
-    char password[PASSWORD_SIZE];
-
-} patient;
-
-// Patient visit
-
-int patient_count = 0;
-#define PATIENT_MAX_COUNT 800
-patient Patients[PATIENT_MAX_COUNT];
-char patient_file_path[] = "patient.bin";
 
 
 
@@ -120,6 +85,59 @@ off_date Cal_Off_Date[OFF_DATE_MAX_COUNT];
 
 
 
+//* Srtuct
+typedef struct doc_time_work {
+
+    date date_time_work_arr[31];
+    int start_time_work_arr[31];
+    int end_time_work_arr[31];
+    int count_time_work;
+    
+} doc_time_work;
+
+
+
+//* Doctor
+typedef struct doctor {
+
+    int id;
+    int wallet;
+    char name[NAME_SIZE];
+    char email[EMAIL_SIZE];
+    char code_n[NATIONAL_CODE_SIZE];
+    char password[PASSWORD_SIZE];
+
+    doc_time_work time_work;
+
+} doctor;
+
+int doctor_count = 0;
+#define DOCTOR_MAX_COUNT 50
+doctor Doctors[DOCTOR_MAX_COUNT];
+char doctor_file_path[] = "doctor.bin";
+
+
+
+//* Patient
+typedef struct patient {
+    int id;
+    char name[NAME_SIZE];
+    char email[EMAIL_SIZE];
+    char code_n[NATIONAL_CODE_SIZE];
+    char password[PASSWORD_SIZE];
+
+} patient;
+
+// Patient visit
+
+int patient_count = 0;
+#define PATIENT_MAX_COUNT 800
+patient Patients[PATIENT_MAX_COUNT];
+char patient_file_path[] = "patient.bin";
+
+
+
+
 
 //** Functions
 void Sign_In_Function();
@@ -137,6 +155,8 @@ void AP_Patients_List();
 void AP_Monthly_Schedule();
 
 void Doctor_Panel(int doc_login_id);
+void DP_Determining_Shifts(int doc_id);
+void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -658,6 +678,7 @@ void AP_Add_Doctor() {
 
 
         doc.wallet = 10;
+        doc.time_work.count_time_work = 0;
         doc.id = doctor_count;
 
 
@@ -1505,7 +1526,7 @@ void Doctor_Panel(int doc_login_id) {
         switch (DocInput) {
         
             case 1:
-                // 
+                DP_Determining_Shifts(doc_login_id);
                 break;
             
             case 2:
@@ -1538,6 +1559,309 @@ void Doctor_Panel(int doc_login_id) {
     } // while end
 
 }
+
+
+
+void DP_Determining_Shifts(int doc_id) {
+
+    while(1) {
+
+        RUN_CLS;
+
+        Bar_Status(2, doc_id);
+        printf("Determining The Shifts\n\n");
+        printf("    %s1 %s> %sSet For a Day\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sRecurring Days in The Month\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sBack\n", Color_Yellow, Color_Aqua, Color_Reset);
+    
+        Sleep(500);
+
+        Bar_Status(2, doc_id);
+        printf("Select one More: ");
+
+        int DocInput = User_Input_Number_Range(1, 2);
+
+        Sleep(500);
+
+        if (DocInput == -1) continue;
+
+        if (DocInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Back.\n");
+            Sleep(2000);
+            return;
+        }
+
+
+        switch (DocInput) {
+
+            case 1:
+                
+                while(1) {
+
+                    RUN_CLS;
+                    
+                    Bar_Status(2, doc_id);
+                    printf("Set For a Day (Ctrl+C ~ Back)\n");
+
+                    DP_Print_Calendar(doc_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                    Bar_Status(2, doc_id);
+                    printf("Enter Your Desired Day: ");
+
+                    int input_day = User_Input_Number_Range(1, Date_Start_Cal.d);
+
+                    if (input_day == -1) continue;
+
+                    if (input_day == -2) {
+                        printf("Back.\n");
+                        Sleep(2000);
+                        return;
+                    }
+
+                    int try_again = 0;
+
+                    // holiday
+                    for (int i = 0; i<Cal_Off_Date_Count; i++) {
+                        
+                        if (Cal_Off_Date[i].Date.d == input_day) {
+                            
+                            Bar_Status(2, doc_id);
+                            printf("This Day is a Holiday!\n");
+                            Sleep(3000);
+                            try_again = 1;
+                            break;
+                        }
+
+                    }
+
+                    if (try_again) continue;
+
+                    // friday
+                    int tmp = 1 + (6 - Date_Start_Cal.week_d);
+                    
+                    for (; tmp <= Date_Start_Cal.d; tmp += 7) {
+                        
+                        if (tmp == input_day) {
+                            Bar_Status(2, doc_id);
+                            printf("This Day is Friday!\n");
+                            Sleep(3000);
+                            try_again = 1;
+                            break;
+                        }
+
+                    }
+
+                    if (try_again) continue;
+
+                    for (int i =0; i < Doctors[doc_id].time_work.count_time_work; i++) {
+                    
+                        if (input_day == Doctors[doc_id].time_work.date_time_work_arr[i].d) {
+
+                            Bar_Status(2, doc_id);
+                            printf("This day has already been defined. Redefine (y/n)? ");
+
+                            int x = getch();
+                            printf("%c\n", (char)x);
+
+                            if (x == 'y' || x == 'Y') {
+                                break;
+                            }
+
+                            else {
+                                Bar_Status(2, doc_id);
+                                printf("Back\n");
+                                Sleep(2000);
+                                return;
+                            }
+
+                        }
+                    
+                    }
+
+                    Bar_Status(2, doc_id);
+                    printf("Enter Start Time: ");
+
+                    int start_time = User_Input_Number_Range(1, 24);
+
+                    if (start_time == -1) continue;
+
+                    if (start_time == -2) {
+                        printf("Back.\n");
+                        Sleep(2000);
+                        return;
+                    }
+
+
+                    Bar_Status(2, doc_id);
+                    printf("Enter End Time: ");
+
+                    int end_time = User_Input_Number_Range(1, 24);
+
+                    if (end_time == -1) continue;
+
+                    if (end_time == -2) {
+                        printf("Back.\n");
+                        Sleep(2000);
+                        return;
+                    }
+
+
+                    tmp = 1 + (5 - Date_Start_Cal.week_d);
+                    
+                    for (; tmp <= Date_Start_Cal.d; tmp += 7) {
+                        
+                        if (tmp == input_day) {
+                            
+                            if (start_time < 8 || end_time > 13) { 
+                                
+                                Bar_Status(2, doc_id);
+                                printf("The Hour Entered is Outside the Working Time (Thu - 8 ~ 13)\n");
+                                Sleep(5000);
+                                try_again = 1;
+                                break;
+
+                            }
+                            
+                        }
+
+                    }
+
+                    if (try_again) continue;
+
+                    if (start_time < 8 || end_time > 21) { 
+                                
+                        Bar_Status(2, doc_id);
+                        printf("The Hour Entered is Outside the Working Time (Sat ~ Wed - 8 ~ 21)\n");
+                        Sleep(5000);
+                        continue;
+
+                    }
+                    
+                    
+                    if (start_time >= end_time) {
+                        Bar_Status(2, doc_id);
+                        printf("The Start and End Times Do Not Match\n");
+                        Sleep(5000);
+                        continue;
+                    }
+
+
+                    tmp = Doctors[doc_id].time_work.count_time_work;
+                    Doctors[doc_id].time_work.date_time_work_arr[tmp].d = input_day;
+                    Doctors[doc_id].time_work.date_time_work_arr[tmp].m = Date_Start_Cal.m;
+                    Doctors[doc_id].time_work.date_time_work_arr[tmp].y = Date_Start_Cal.y;
+
+                    Doctors[doc_id].time_work.start_time_work_arr[tmp] = start_time;
+                    Doctors[doc_id].time_work.end_time_work_arr[tmp] = end_time;
+
+                    Doctors[doc_id].time_work.count_time_work++;
+
+                    Update_Files();
+
+                    Bar_Status(2, doc_id);
+                    printf("Business Hours have been Successfully Added\n");
+                    Sleep(5000);
+
+                    break;
+
+                } // while end
+
+                break;
+            
+            case 2:
+                /* code */
+                break;
+            
+            case 3:
+                Bar_Status(2, doc_id);
+                printf("Back.\n");
+                Sleep(2000);
+                return;
+                break;
+            
+        
+        } // switch end
+
+
+
+
+        break;
+    
+    
+    } // while end
+
+
+}
+
+
+
+void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
+
+    printf("\n    %s>>> %s # ", Color_Green, Doctors[doc_id].name);
+
+    Print_Month(m);
+
+    printf(" ~ %d %s\n", y, Color_Reset);
+    
+    printf("    %s--- --- --- --- --- --- ---%s\n", Color_Gray, Color_Reset);
+    printf("    Sat Sun Mon Tue Wed Thu %sFri%s\n", Color_Red, Color_Reset);
+    printf("    %s--- --- --- --- --- --- ---%s\n", Color_Gray, Color_Reset);
+
+    printf("    ");
+
+    for (int i =0; i<week_d; i++) {
+        printf("    ");
+    }
+
+    for (int i = 1; i<=d; i++) {
+
+        if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
+
+        int found_flag = 0;
+
+        // off date
+        for (int j=0; j<Cal_Off_Date_Count; j++) {
+            
+            if (Cal_Off_Date[j].Date.m == m && Cal_Off_Date[j].Date.y == y) {
+
+                if (Cal_Off_Date[j].Date.d == i) {
+                    printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+                    found_flag = 1;
+                    break;
+                }
+
+            }
+
+        }
+        
+        // doc shift
+        for (int j=0; j < Doctors[doc_id].time_work.count_time_work; j++) {
+        
+            if (Doctors[doc_id].time_work.date_time_work_arr[j].d == i) {
+                printf("%s%3d%s", Color_Green, i, Color_Reset);
+                found_flag = 1;
+                break;
+            }
+
+        }
+
+        if (found_flag == 0 && week_d != 6) printf("%3d", i);
+
+        week_d++;
+
+        if (week_d > 6) {
+            printf("\n    ");
+            week_d = 0;
+        }
+
+        else printf(" ");
+    }
+
+    printf("\n");
+
+}
+
 
 
 
