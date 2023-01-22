@@ -100,7 +100,7 @@ typedef struct date {
     week week_d;
 }date;
 
-char calendar_in_path[] = "Calendar.bin";
+char calendar_in_path[] = "calendar.bin";
 int Active_Calendar = 0;
 date Date_Start_Cal;
 date Date_Start_Cal_Next = {0, 0, 0, 0};
@@ -962,14 +962,14 @@ void AP_Monthly_Schedule() {
                 Bar_Status(1);
                 printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
 
-                Bar_Status(1);
-                printf("Last Month\n");
-                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
-
                 Date_Start_Cal_Last.y = Date_Start_Cal.y;
                 Date_Start_Cal_Last.m = Date_Start_Cal.m;
                 Date_Start_Cal_Last.d = Date_Start_Cal.d;
                 Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
+                
+                Bar_Status(1);
+                printf("Last Month\n");
+                Print_Calendar(Date_Start_Cal_Last.y, Date_Start_Cal_Last.m, Date_Start_Cal_Last.d, Date_Start_Cal_Last.week_d);
 
                 Date_Start_Cal.y = Date_Start_Cal_Next.y;
                 Date_Start_Cal.m = Date_Start_Cal_Next.m;
@@ -984,6 +984,8 @@ void AP_Monthly_Schedule() {
                 Bar_Status(1);
                 printf("Next Month\n");
                 Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                Update_Files();
 
                 Sleep(5000);
             
