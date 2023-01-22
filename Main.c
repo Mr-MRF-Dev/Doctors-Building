@@ -108,6 +108,24 @@ date Date_Start_Cal_Last = {0, 0, 0, 0};
 date Date_Login; 
 
 
+typedef struct off_date {
+    date Date;
+    char Reason[101];
+} off_date;
+
+char off_date_path[] = "off-date.bin";
+#define OFF_DATE_MAX_COUNT 31
+int Cal_Off_Date_Count = 0;
+off_date Cal_Off_Date[OFF_DATE_MAX_COUNT];
+
+
+// get file off date
+// update off date
+// show off date
+// reset off date
+// check in off date
+// fucking off date
+
 
 
 //** Functions
@@ -1174,8 +1192,107 @@ void AP_Monthly_Schedule() {
 
 
             case 1:
-                printf("1");
-                Sleep(2000);
+
+                Bar_Status(1);
+                printf("How Many Days do you Want to Declare a Holiday?: ");
+
+                int get_off_date_record = User_Input_Number_Range(0, Date_Start_Cal.d);
+                
+                if (get_off_date_record == -1) {
+                    Bar_Status(1);
+                    printf("Back\n");
+                    Sleep(1500);
+                    break;
+                }
+
+                if (get_off_date_record == -2) {
+                    printf("Back\n");
+                    Sleep(1500);
+                    break;
+
+                }
+
+                if (get_off_date_record == 0) {
+                    Bar_Status(1);
+                    printf("Ok :/ You Curse Me, Are you Making Fun of Me :/ ( 10 sec Sleep :) )\n ");
+                    Sleep(10000);
+                    break;
+                }
+
+                int i = 0;
+                while(i != get_off_date_record) {
+
+                    RUN_CLS;
+
+                    Bar_Status(1);
+                    printf("Enter the Data Related to the %s%d Record%s: (Ctrl + C ~ Back)\n", Color_Yellow, i+1, Color_Reset);
+
+
+                    Bar_Status(1);
+                    printf("Enter Date (day): ");
+
+                    int input_day = User_Input_Number_Range(0, Date_Start_Cal.d);
+
+                    if (input_day == -1) continue;
+
+                    if (input_day == -2) {
+                        printf("Exit %d Record\n", i);
+                        Sleep(3000);
+                        break;
+                    }
+
+                    // check fri
+                    int tmp = Date_Start_Cal.week_d, flag_found = 0;
+                    for (int i = 1; i <= Date_Start_Cal.d; i++) {
+                        
+                        if (tmp == 6) {
+                            if (i == input_day) {
+                                Bar_Status(1);
+                                printf("The Selected Day is Friday.\n");
+                                flag_found = 1;
+                                Sleep(3000);
+                                break;
+                            }
+                        }
+                        tmp++;
+                        if (tmp > 6) tmp = 0;
+                    }
+
+                    if (flag_found) continue;
+
+
+                    //check in off date
+
+
+                    Bar_Status(1);
+                    printf("What is the Reason for the Closure? ~ ");
+                    
+                    char temp_char_r[101];
+                    int temp_char_in = User_Input_String(temp_char_r, 101, 0);
+                
+                    if (temp_char_in == -1) continue;
+
+                    if (temp_char_in == -2) {
+                        printf("Back\n");
+                        Sleep(3000);
+                        break;
+                    }
+
+                    Cal_Off_Date[Cal_Off_Date_Count].Date.d = input_day;
+                    Cal_Off_Date[Cal_Off_Date_Count].Date.m = Date_Start_Cal.m;
+                    Cal_Off_Date[Cal_Off_Date_Count].Date.y = Date_Start_Cal.y;
+                    strcpy(Cal_Off_Date[Cal_Off_Date_Count].Reason, temp_char_r);
+
+                    Update_Files();
+
+                    Bar_Status(1);
+                    printf("Holiday Added Successfully (%s%d Record%s)\n", Color_Green, i+1, Color_Reset);
+                    Sleep(3000);
+
+                    Cal_Off_Date_Count++;
+                    i++;
+                }
+
                 break;
 
             case 2:
@@ -1183,7 +1300,7 @@ void AP_Monthly_Schedule() {
                 if (Date_Start_Cal_Next.y != 0 && Date_Start_Cal_Next.m != 0 && Date_Start_Cal_Next.d != 0) {
                     
                     Bar_Status(1);
-                    printf("The next month is already defined. Would you like to redefine it(y/n)? (s ~ see): ");
+                    printf("The next month is already defined. Would you like to redefine it(y/n)? (s ~ See): ");
 
                     int y = getch();
                     printf("%c\n", (char)y );
