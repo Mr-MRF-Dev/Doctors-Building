@@ -15,7 +15,7 @@
 //** Colors
 char Color_Reset[] = "\033[0m";
 char Color_Red[] = "\033[0;31m";
-char Color_Red_Dark[] = "\033[38;2;0;255;255m";
+char Color_Red_Dark[] = "\033[38;2;160;0;0m";
 char Color_Green[] = "\033[0;32m";
 char Color_Yellow[] = "\033[0;33m";
 char Color_Yellow_Dark[] = "\033[38;2;200;200;0m";
@@ -119,13 +119,6 @@ int Cal_Off_Date_Count = 0;
 off_date Cal_Off_Date[OFF_DATE_MAX_COUNT];
 
 
-// get file off date
-// update off date
-// show off date
-// reset off date
-// check in off date
-// fucking off date
-
 
 
 //** Functions
@@ -146,6 +139,7 @@ void AP_Monthly_Schedule();
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
 void Print_Month(int m);
+void Print_Off_Date();
 
 void Get_Files();
 void Update_Files();
@@ -1003,6 +997,9 @@ void AP_Monthly_Schedule() {
                 printf("Next Month\n");
                 Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
 
+                // reset off day
+                Cal_Off_Date_Count = 0;
+
                 Update_Files();
 
                 Sleep(5000);
@@ -1134,6 +1131,7 @@ void AP_Monthly_Schedule() {
             Date_Start_Cal_Next.d = 0;
             Date_Start_Cal_Next.week_d = 0;
 
+            Cal_Off_Date_Count = 0;
             Active_Calendar = 1;
             Update_Files();
 
@@ -1158,6 +1156,8 @@ void AP_Monthly_Schedule() {
         RUN_CLS;
 
         Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+        Print_Off_Date();
 
         Bar_Status(1);
         printf("Monthly Schedule\n\n");
@@ -1214,8 +1214,8 @@ void AP_Monthly_Schedule() {
 
                 if (get_off_date_record == 0) {
                     Bar_Status(1);
-                    printf("Ok :/ You Curse Me, Are you Making Fun of Me :/ ( 10 sec Sleep :) )\n ");
-                    Sleep(10000);
+                    printf("Ok :/ You Curse Me, Are you Making Fun of Me :/ ( 30 sec Sleep :) )\n ");
+                    Sleep(30000);
                     break;
                 }
 
@@ -1223,6 +1223,8 @@ void AP_Monthly_Schedule() {
                 while(i != get_off_date_record) {
 
                     RUN_CLS;
+
+                    Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
 
                     Bar_Status(1);
                     printf("Enter the Data Related to the %s%d Record%s: (Ctrl + C ~ Back)\n", Color_Yellow, i+1, Color_Reset);
@@ -1236,7 +1238,7 @@ void AP_Monthly_Schedule() {
                     if (input_day == -1) continue;
 
                     if (input_day == -2) {
-                        printf("Exit %d Record\n", i);
+                        printf("Back ~ %d Record Saved\n", i);
                         Sleep(3000);
                         break;
                     }
@@ -1260,8 +1262,19 @@ void AP_Monthly_Schedule() {
 
                     if (flag_found) continue;
 
+                    for (int i =0; i < Cal_Off_Date_Count; i++) {
+                        if (Cal_Off_Date[i].Date.d == input_day) {
 
-                    //check in off date
+                            Bar_Status(1);
+                            printf("The Selected Day is Holiday.\n");
+                            flag_found = 1;
+                            Sleep(3000);
+                            break;
+
+                        }
+                    }
+
+                    if (flag_found) continue;
 
 
                     Bar_Status(1);
@@ -1273,7 +1286,7 @@ void AP_Monthly_Schedule() {
                     if (temp_char_in == -1) continue;
 
                     if (temp_char_in == -2) {
-                        printf("Back\n");
+                        printf("Back ~ %d Record Saved\n", i);
                         Sleep(3000);
                         break;
                     }
@@ -1282,6 +1295,7 @@ void AP_Monthly_Schedule() {
                     Cal_Off_Date[Cal_Off_Date_Count].Date.m = Date_Start_Cal.m;
                     Cal_Off_Date[Cal_Off_Date_Count].Date.y = Date_Start_Cal.y;
                     strcpy(Cal_Off_Date[Cal_Off_Date_Count].Reason, temp_char_r);
+                    Cal_Off_Date_Count++;
 
                     Update_Files();
 
@@ -1289,7 +1303,6 @@ void AP_Monthly_Schedule() {
                     printf("Holiday Added Successfully (%s%d Record%s)\n", Color_Green, i+1, Color_Reset);
                     Sleep(3000);
 
-                    Cal_Off_Date_Count++;
                     i++;
                 }
 
@@ -1453,6 +1466,27 @@ void AP_Monthly_Schedule() {
 
 
 
+void Print_Off_Date() {
+
+    printf("\n\n");
+    printf("    %sDate ~ Reason\n%s",Color_Gray, Color_Reset);
+
+    for (int i=0; i<Cal_Off_Date_Count; i++) {
+
+        printf("    %s%3d%s", Color_Green, Cal_Off_Date[i].Date.d, Color_Reset);
+
+        printf("%s  ~ %s", Color_Gray, Color_Reset);
+
+        printf("%s%s%s\n", Color_Blue, Cal_Off_Date[i].Reason, Color_Reset);
+
+    }
+
+    printf("\n");
+
+}
+
+
+
 void Print_Calendar(int y, int m, int d, int week_d) {
 
     printf("\n    %s>>> ", Color_Green);
@@ -1474,8 +1508,24 @@ void Print_Calendar(int y, int m, int d, int week_d) {
     for (int i = 1; i<=d; i++) {
 
         if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
-        
-        else printf("%3d", i);
+
+        int found_flag = 0;
+
+        for (int j=0; j<Cal_Off_Date_Count; j++) {
+            
+            if (Cal_Off_Date[j].Date.m == m && Cal_Off_Date[j].Date.y == y) {
+
+                if (Cal_Off_Date[j].Date.d == i) {
+                    printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+                    found_flag = 1;
+                    break;
+                }
+
+            }
+
+        }
+
+        if (found_flag == 0 && week_d != 6) printf("%3d", i);
 
         week_d++;
 
@@ -1565,6 +1615,29 @@ void Get_Files() {
     printf("------------------------------\n");
 
 
+    // Get Off Date
+    FILE *fp_Off_Date = fopen(off_date_path, "rb");
+
+    if (fp_Off_Date != NULL) {
+        
+        while (fread(&Cal_Off_Date[Cal_Off_Date_Count], sizeof(off_date), 1, fp_Off_Date)) {
+            Cal_Off_Date_Count++;
+        }
+
+        printf("The file information was read successfully. %d Off Date.\n", Cal_Off_Date_Count);
+
+    }
+
+    else printf("The file does not exist or could not be opened ~ (%s).\n", off_date_path);
+
+    fclose(fp_Off_Date);
+
+
+    printf("------------------------------\n");
+
+
+
+
     Sleep(5000);
 
 }
@@ -1624,6 +1697,23 @@ void Update_Files() {
         fclose(fp_Date);
 
     }
+
+
+
+    // Off Date Update
+    FILE *fp_off_date = fopen(off_date_path, "wb");
+
+    if (fp_off_date != NULL) {
+        
+        for(int i =0; i < Cal_Off_Date_Count; i++) {
+
+            fwrite(&Cal_Off_Date[i], sizeof(off_date), 1, fp_off_date);
+        
+        }
+
+    }
+
+    fclose(fp_off_date);
 
 
 
