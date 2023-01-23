@@ -1927,17 +1927,33 @@ void DP_Print_Work_Time(int doc_id) {
     if (Doctors[doc_id].time_work.count_time_work == 0) return;
 
     printf("\n");
-    printf("    %sDate ~ Start <=> End\n%s",Color_Gray, Color_Reset);
+    printf("    %sDate ~ Start <=> End  ||  Date ~ Start <=> End\n%s",Color_Gray, Color_Reset);
+
+    int flag = 1;
 
     for (int i=0; i < Doctors[doc_id].time_work.count_time_work ; i++) {
 
-        printf("    %s%3d%s", Color_Green, Doctors[doc_id].time_work.date_time_work_arr[i].d, Color_Reset);
+        if (flag) {
+            printf("    ");
+        }
+
+        printf("%s%3d%s", Color_Green, Doctors[doc_id].time_work.date_time_work_arr[i].d, Color_Reset);
 
         printf("%s  ~ %s", Color_Gray, Color_Reset);
 
         printf("%s%3d   --- ", Color_Blue, Doctors[doc_id].time_work.start_time_work_arr[i]);
 
-        printf("%3d%s\n", Doctors[doc_id].time_work.end_time_work_arr[i], Color_Reset);
+        printf("%3d%s", Doctors[doc_id].time_work.end_time_work_arr[i], Color_Reset);
+
+        if (flag) {
+            printf("%s  ||  %s", Color_Gray, Color_Reset);
+            flag = 0;
+        }
+
+        else {
+            printf("\n");
+            flag = 1;
+        }
 
     }
 
