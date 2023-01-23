@@ -106,6 +106,8 @@ typedef struct doctor {
     char code_n[NATIONAL_CODE_SIZE];
     char password[PASSWORD_SIZE];
 
+    int visit_pay;
+    
     doc_time_work time_work;
 
 } doctor;
@@ -158,6 +160,7 @@ void Doctor_Panel(int doc_login_id);
 void DP_Determining_Shifts(int doc_id);
 void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d);
 void DP_Print_Work_Time(int doc_id);
+void DP_Visirs_Payment(int doc_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -710,6 +713,7 @@ void AP_Add_Doctor() {
         doc.wallet = 10;
         doc.time_work.count_time_work = 0;
         doc.id = doctor_count;
+        doc.visit_pay = 0;
 
 
         // Find a duplicate doctor
@@ -1103,9 +1107,10 @@ void AP_Monthly_Schedule() {
             Date_Start_Cal_Next.d = 0;
             Date_Start_Cal_Next.week_d = 0;
 
-            // reset all time work
+            // reset all doctor info
             for (int dc=0; dc<doctor_count; dc++) {
                 Doctors[dc].time_work.count_time_work = 0;
+                Doctors[dc].visit_pay = 0;
             }
 
             Cal_Off_Date_Count = 0;
@@ -1506,7 +1511,7 @@ void Doctor_Panel(int doc_login_id) {
                 break;
             
             case 6:
-                //
+                DP_Visirs_Payment(doc_login_id);
                 break;
             
             case 7:
@@ -2041,6 +2046,73 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
     }
 
     printf("\n");
+
+}
+
+
+
+void DP_Visirs_Payment(int doc_id) {
+    
+    while(1) {
+
+        RUN_CLS;
+
+        Bar_Status(2, doc_id);
+
+        if (Doctors[doc_id].visit_pay == 0) {
+            printf("You Have Not Set Up Paying Visitors\n");
+            Sleep(1000);
+        }
+
+        else {
+
+            printf("Paying Visitors Are Already Set Up, Reset It? (%d$) (y/n): ", Doctors[doc_id].visit_pay);
+
+            int x = getch();
+            printf("%c\n", (char)x );
+
+            if (x == 'y' || x == 'Y') {
+                Sleep(1000);
+            }
+
+            else {
+                Bar_Status(2, doc_id);
+                printf("Back.\n");
+                Sleep(2000);
+                return;
+            }
+
+        }
+
+        Sleep(500);
+
+        Bar_Status(2, doc_id);
+        printf("Set Up Paying Visitors (10 ~ 50): ");
+
+        int PayInput = User_Input_Number_Range(10, 50);
+
+        Sleep(500);
+
+        if (PayInput == -1) continue;
+
+        if (PayInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Back.\n");
+            Sleep(2000);
+            return;
+        }
+
+
+        Doctors[doc_id].visit_pay = PayInput;
+        Update_Files();
+
+        Bar_Status(2, doc_id);
+        printf("Changes Applied Successfully\n");
+        Sleep(3000);
+
+        break;
+
+    } // while end
 
 }
 
@@ -2846,9 +2918,10 @@ void Main_Check_Active_Calendar() {
                 // reset off day
                 Cal_Off_Date_Count = 0;
 
-                // reset all time work
+                // reset all doctor info
                 for (int dc=0; dc<doctor_count; dc++) {
                     Doctors[dc].time_work.count_time_work = 0;
+                    Doctors[dc].visit_pay = 0;
                 }
 
                 Update_Files();
