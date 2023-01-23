@@ -588,7 +588,10 @@ void Admin_Panel() {
                     RUN_CLS;
                     Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
                     Print_Off_Date();
-                    Sleep(10000);
+
+                    printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                    printf("%c\n", (char)getch() );
+                    Sleep(500);
                     break;
                 }
 
@@ -1483,7 +1486,11 @@ void Doctor_Panel(int doc_login_id) {
                 RUN_CLS;
                 DP_Print_Calendar(doc_login_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
                 DP_Print_Work_Time(doc_login_id);
-                Sleep(10000);
+
+                printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                printf("%c\n", (char)getch() );
+
+                Sleep(500);
                 break;
             
             case 3:
@@ -1873,6 +1880,8 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
 
 void Print_Off_Date() {
+
+    if (Cal_Off_Date_Count == 0) return;
 
     printf("\n");
     printf("    %sDate ~ Reason\n%s",Color_Gray, Color_Reset);
