@@ -39,8 +39,7 @@ int run_cls = 1;
 // off color
 // file Error Management
 // Hash PassWord
-// 
-// reset all 
+
 
 
 //** Define Const Num
@@ -146,6 +145,7 @@ void Exit_Function(int bar_status_code, int exit_code, int login_code);
 
 void Bar_Status(int login, int id);
 void Main_Func_Get_User_Date();
+void Main_Check_Active_Calendar();
 
 void Admin_Panel();
 void AP_Add_Doctor();
@@ -157,6 +157,7 @@ void AP_Monthly_Schedule();
 void Doctor_Panel(int doc_login_id);
 void DP_Determining_Shifts(int doc_id);
 void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d);
+void DP_Print_Work_Time(int doc_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -190,6 +191,8 @@ int main() {
         printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
         Sleep(5000);
     }
+
+    Main_Check_Active_Calendar();
 
     while (1) {
 
@@ -304,6 +307,13 @@ void Sign_In_Function() {
             Sleep(3000);
             continue;
         
+        }
+
+        else if (Active_Calendar == 0) {
+            Bar_Status(0, 0);
+            printf("%sSet the Calendar First! (Admin)%s\n", Color_Red, Color_Reset);
+            Sleep(3000);
+            continue;
         }
 
         else {
@@ -530,15 +540,16 @@ void Admin_Panel() {
         printf("    %s3 %s> %sAdd Patient\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s4 %s> %sPatients List\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s5 %s> %sMonthly Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s6 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s7 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s6 %s> %sSee Calendar\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s7 %s> %sVisits Schedule\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s8 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
 
         Sleep(500);
 
         Bar_Status(1, 0);
         printf("Select one More: ");
 
-        int AdminInput = User_Input_Number_Range(1, 7);
+        int AdminInput = User_Input_Number_Range(1, 8);
 
         Sleep(500);
 
@@ -573,10 +584,26 @@ void Admin_Panel() {
                 break;
             
             case 6:
+                if (Active_Calendar) {
+                    RUN_CLS;
+                    Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+                    Print_Off_Date();
+                    Sleep(10000);
+                    break;
+                }
+
+                else {
+                    Bar_Status(1, 0);
+                    printf("%sSet the Calendar First!%s\n", Color_Red, Color_Reset);
+                    Sleep(3000);
+                    break;
+                }
+            
+            case 7:
                 /* code */
                 break;
             
-            case 7:
+            case 8:
                 Bar_Status(1, 0);
                 printf("logout Successful.\n");
                 Sleep(2000);
@@ -967,90 +994,7 @@ void AP_Monthly_Schedule() {
 
     RUN_CLS;
 
-    if (Active_Calendar == 1) {
-
-        if (Date_Login.y > Date_Start_Cal.y && !( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1 ) ) {
-            Bar_Status(1, 0);
-            printf("%sIn The Month, The Program Calendar is Not Set (Year)%s\n", Color_Red, Color_Reset);
-            Sleep(5000);
-            Active_Calendar = 0;
-        }
-
-
-        else if (Date_Login.m == Date_Start_Cal.m + 1 || ( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1) ) {
-            
-            if (Date_Start_Cal_Next.y == 0 && Date_Start_Cal_Next.m == 0 && Date_Start_Cal_Next.d == 0) {
-                
-                Bar_Status(1, 0);
-                printf("%sIn The Month, The Program Calendar is Not Set (No Next)%s\n", Color_Red, Color_Reset);
-                Sleep(5000);
-
-                Date_Start_Cal_Last.y = Date_Start_Cal.y;
-                Date_Start_Cal_Last.m = Date_Start_Cal.m;
-                Date_Start_Cal_Last.d = Date_Start_Cal.d;
-                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
-
-                Active_Calendar = 0;
-
-            }
-
-            else {
-
-                Bar_Status(1, 0);
-                printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
-
-                Date_Start_Cal_Last.y = Date_Start_Cal.y;
-                Date_Start_Cal_Last.m = Date_Start_Cal.m;
-                Date_Start_Cal_Last.d = Date_Start_Cal.d;
-                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
-                
-                Bar_Status(1, 0);
-                printf("Last Month\n");
-                Print_Calendar(Date_Start_Cal_Last.y, Date_Start_Cal_Last.m, Date_Start_Cal_Last.d, Date_Start_Cal_Last.week_d);
-
-                Date_Start_Cal.y = Date_Start_Cal_Next.y;
-                Date_Start_Cal.m = Date_Start_Cal_Next.m;
-                Date_Start_Cal.d = Date_Start_Cal_Next.d;
-                Date_Start_Cal.week_d = Date_Start_Cal_Next.week_d;
-
-                Date_Start_Cal_Next.y = 0;
-                Date_Start_Cal_Next.m = 0;
-                Date_Start_Cal_Next.d = 0;
-                Date_Start_Cal_Next.week_d = 0;
-
-                Bar_Status(1, 0);
-                printf("Next Month\n");
-                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
-
-                // reset off day
-                Cal_Off_Date_Count = 0;
-
-                Update_Files();
-
-                Sleep(5000);
-            
-            }
-
-        }
-
-        else if (Date_Login.m > Date_Start_Cal.m) {
-            Bar_Status(1, 0);
-            printf("%sIn The Month, The Program Calendar is Not Set (Month)%s\n", Color_Red, Color_Reset);
-            Sleep(5000);
-            Active_Calendar = 0;
-        }
-
-
-        if (Active_Calendar == 1 && Date_Start_Cal.d - Date_Login.d < 10) {
-            Bar_Status(1, 0);
-            printf("%sThe Next Month is Near, don't Forgot to Define it.%s\n", Color_Yellow, Color_Reset);
-            Sleep(5000);
-        }
-
-
-    } // if end 
-
-
+    // Main_Check_Active_Calendar()
 
     if (Active_Calendar == 0) {
 
@@ -1155,6 +1099,11 @@ void AP_Monthly_Schedule() {
             Date_Start_Cal_Next.m = 0;
             Date_Start_Cal_Next.d = 0;
             Date_Start_Cal_Next.week_d = 0;
+
+            // reset all time work
+            for (int dc=0; dc<doctor_count; dc++) {
+                Doctors[dc].time_work.count_time_work = 0;
+            }
 
             Cal_Off_Date_Count = 0;
             Active_Calendar = 1;
@@ -1500,18 +1449,19 @@ void Doctor_Panel(int doc_login_id) {
         Bar_Status(2, doc_login_id);
         printf("Doctor Panel:\n\n");
         printf("    %s1 %s> %sDetermining The Shifts\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s2 %s> %sReserved Visits\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s3 %s> %sPatient Prescription\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s4 %s> %sRent Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s5 %s> %sVisirs Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
-        printf("    %s6 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sSee Calendar\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sReserved Visits\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sPatient Prescription\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sRent Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s6 %s> %sVisirs Payment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s7 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
 
         Sleep(500);
 
         Bar_Status(2, doc_login_id);
         printf("Select one More: ");
 
-        int DocInput = User_Input_Number_Range(1, 6);
+        int DocInput = User_Input_Number_Range(1, 7);
 
         Sleep(500);
 
@@ -1530,7 +1480,10 @@ void Doctor_Panel(int doc_login_id) {
                 break;
             
             case 2:
-                // 
+                RUN_CLS;
+                DP_Print_Calendar(doc_login_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+                DP_Print_Work_Time(doc_login_id);
+                Sleep(10000);
                 break;
             
             case 3:
@@ -1546,6 +1499,10 @@ void Doctor_Panel(int doc_login_id) {
                 break;
             
             case 6:
+                //
+                break;
+            
+            case 7:
                 Bar_Status(2, doc_login_id);
                 printf("logout Successful.\n");
                 Sleep(2000);
@@ -1567,6 +1524,10 @@ void DP_Determining_Shifts(int doc_id) {
     while(1) {
 
         RUN_CLS;
+
+        DP_Print_Calendar(doc_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+        DP_Print_Work_Time(doc_id);
 
         Bar_Status(2, doc_id);
         printf("Determining The Shifts\n\n");
@@ -1605,6 +1566,8 @@ void DP_Determining_Shifts(int doc_id) {
                     printf("Set For a Day (Ctrl+C ~ Back)\n");
 
                     DP_Print_Calendar(doc_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                    DP_Print_Work_Time(doc_id);
 
                     Bar_Status(2, doc_id);
                     printf("Enter Your Desired Day: ");
@@ -1654,6 +1617,8 @@ void DP_Determining_Shifts(int doc_id) {
 
                     if (try_again) continue;
 
+                    int dub = -1;
+
                     for (int i =0; i < Doctors[doc_id].time_work.count_time_work; i++) {
                     
                         if (input_day == Doctors[doc_id].time_work.date_time_work_arr[i].d) {
@@ -1665,6 +1630,7 @@ void DP_Determining_Shifts(int doc_id) {
                             printf("%c\n", (char)x);
 
                             if (x == 'y' || x == 'Y') {
+                                dub = i;
                                 break;
                             }
 
@@ -1738,7 +1704,7 @@ void DP_Determining_Shifts(int doc_id) {
 
                     }
                     
-                    
+
                     if (start_time >= end_time) {
                         Bar_Status(2, doc_id);
                         printf("The Start and End Times Do Not Match\n");
@@ -1748,6 +1714,8 @@ void DP_Determining_Shifts(int doc_id) {
 
 
                     tmp = Doctors[doc_id].time_work.count_time_work;
+                    if (dub != -1) tmp = dub;
+
                     Doctors[doc_id].time_work.date_time_work_arr[tmp].d = input_day;
                     Doctors[doc_id].time_work.date_time_work_arr[tmp].m = Date_Start_Cal.m;
                     Doctors[doc_id].time_work.date_time_work_arr[tmp].y = Date_Start_Cal.y;
@@ -1755,7 +1723,7 @@ void DP_Determining_Shifts(int doc_id) {
                     Doctors[doc_id].time_work.start_time_work_arr[tmp] = start_time;
                     Doctors[doc_id].time_work.end_time_work_arr[tmp] = end_time;
 
-                    Doctors[doc_id].time_work.count_time_work++;
+                    if(dub == -1) Doctors[doc_id].time_work.count_time_work++;
 
                     Update_Files();
 
@@ -1796,6 +1764,31 @@ void DP_Determining_Shifts(int doc_id) {
 
 
 
+void DP_Print_Work_Time(int doc_id) {
+
+    if (Doctors[doc_id].time_work.count_time_work == 0) return;
+
+    printf("\n");
+    printf("    %sDate ~ Start <=> End\n%s",Color_Gray, Color_Reset);
+
+    for (int i=0; i < Doctors[doc_id].time_work.count_time_work ; i++) {
+
+        printf("    %s%3d%s", Color_Green, Doctors[doc_id].time_work.date_time_work_arr[i].d, Color_Reset);
+
+        printf("%s  ~ %s", Color_Gray, Color_Reset);
+
+        printf("%s%3d  ---  ", Color_Blue, Doctors[doc_id].time_work.start_time_work_arr[i]);
+
+        printf("%3d%s\n", Doctors[doc_id].time_work.end_time_work_arr[i], Color_Reset);
+
+    }
+
+    printf("\n");
+
+}
+
+
+
 void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
     printf("\n    %s>>> %s # ", Color_Green, Doctors[doc_id].name);
@@ -1810,13 +1803,18 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
     printf("    ");
 
+    int today = Date_Login.d;
+    int month = Date_Login.m;
+
     for (int i =0; i<week_d; i++) {
         printf("    ");
     }
 
     for (int i = 1; i<=d; i++) {
 
-        if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
+        if (week_d == 6 && i == today && m == month) printf("%s*%2d%s", Color_Red, i, Color_Reset);
+        
+        else if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
 
         int found_flag = 0;
 
@@ -1826,7 +1824,11 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
             if (Cal_Off_Date[j].Date.m == m && Cal_Off_Date[j].Date.y == y) {
 
                 if (Cal_Off_Date[j].Date.d == i) {
-                    printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+
+                    if (i == today && m == month) printf("%s*%2d%s", Color_Red_Dark, i, Color_Reset);
+
+                    else printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+                    
                     found_flag = 1;
                     break;
                 }
@@ -1839,14 +1841,20 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
         for (int j=0; j < Doctors[doc_id].time_work.count_time_work; j++) {
         
             if (Doctors[doc_id].time_work.date_time_work_arr[j].d == i) {
-                printf("%s%3d%s", Color_Green, i, Color_Reset);
+
+                if (i == today && m == month) printf("%s*%2d%s", Color_Green, i, Color_Reset);
+
+                else printf("%s%3d%s", Color_Green, i, Color_Reset);
+
                 found_flag = 1;
                 break;
             }
 
         }
 
-        if (found_flag == 0 && week_d != 6) printf("%3d", i);
+        if (found_flag == 0 && week_d != 6 && i == today && m == month) printf("*%2d", i);
+
+        else if (found_flag == 0 && week_d != 6) printf("%3d", i);
 
         week_d++;
 
@@ -1864,10 +1872,9 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
 
 
-
 void Print_Off_Date() {
 
-    printf("\n\n");
+    printf("\n");
     printf("    %sDate ~ Reason\n%s",Color_Gray, Color_Reset);
 
     for (int i=0; i<Cal_Off_Date_Count; i++) {
@@ -1900,13 +1907,18 @@ void Print_Calendar(int y, int m, int d, int week_d) {
 
     printf("    ");
 
+    int today = Date_Login.d;
+    int month = Date_Login.m;
+
     for (int i =0; i<week_d; i++) {
         printf("    ");
     }
 
     for (int i = 1; i<=d; i++) {
 
-        if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
+        if (week_d == 6 && i == today && m == month) printf("%s*%2d%s", Color_Red, i, Color_Reset);
+
+        else if (week_d == 6) printf("%s%3d%s", Color_Red, i, Color_Reset);
 
         int found_flag = 0;
 
@@ -1915,7 +1927,11 @@ void Print_Calendar(int y, int m, int d, int week_d) {
             if (Cal_Off_Date[j].Date.m == m && Cal_Off_Date[j].Date.y == y) {
 
                 if (Cal_Off_Date[j].Date.d == i) {
-                    printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+                    
+                    if (i == today && m == month) printf("%s*%2d%s", Color_Red_Dark, i, Color_Reset);
+                    
+                    else printf("%s%3d%s", Color_Red_Dark, i, Color_Reset);
+                    
                     found_flag = 1;
                     break;
                 }
@@ -1924,7 +1940,9 @@ void Print_Calendar(int y, int m, int d, int week_d) {
 
         }
 
-        if (found_flag == 0 && week_d != 6) printf("%3d", i);
+        if (found_flag == 0 && week_d != 6 && i == today && m == month) printf("*%2d", i);
+        
+        else if (found_flag == 0 && week_d != 6) printf("%3d", i);
 
         week_d++;
 
@@ -2586,6 +2604,101 @@ void Main_Func_Get_User_Date() {
     
 
     } // while end
+
+
+}
+
+
+
+void Main_Check_Active_Calendar() {
+
+    if (Active_Calendar == 1) {
+
+        if (Date_Login.y > Date_Start_Cal.y && !( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1 ) ) {
+            Bar_Status(0, 0);
+            printf("%sIn The Month, The Program Calendar is Not Set (Year)%s\n", Color_Red, Color_Reset);
+            Sleep(5000);
+            Active_Calendar = 0;
+        }
+
+
+        else if (Date_Login.m == Date_Start_Cal.m + 1 || ( Date_Login.y == Date_Start_Cal.y + 1 && Date_Start_Cal.m == 12 && Date_Login.m == 1) ) {
+            
+            if (Date_Start_Cal_Next.y == 0 && Date_Start_Cal_Next.m == 0 && Date_Start_Cal_Next.d == 0) {
+                
+                Bar_Status(0, 0);
+                printf("%sIn The Month, The Program Calendar is Not Set (No Next)%s\n", Color_Red, Color_Reset);
+                Sleep(5000);
+
+                Date_Start_Cal_Last.y = Date_Start_Cal.y;
+                Date_Start_Cal_Last.m = Date_Start_Cal.m;
+                Date_Start_Cal_Last.d = Date_Start_Cal.d;
+                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
+
+                Active_Calendar = 0;
+
+            }
+
+            else {
+
+                Bar_Status(0, 0);
+                printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
+
+                Date_Start_Cal_Last.y = Date_Start_Cal.y;
+                Date_Start_Cal_Last.m = Date_Start_Cal.m;
+                Date_Start_Cal_Last.d = Date_Start_Cal.d;
+                Date_Start_Cal_Last.week_d = Date_Start_Cal.week_d;
+                
+                Bar_Status(0, 0);
+                printf("Last Month\n");
+                Print_Calendar(Date_Start_Cal_Last.y, Date_Start_Cal_Last.m, Date_Start_Cal_Last.d, Date_Start_Cal_Last.week_d);
+
+                Date_Start_Cal.y = Date_Start_Cal_Next.y;
+                Date_Start_Cal.m = Date_Start_Cal_Next.m;
+                Date_Start_Cal.d = Date_Start_Cal_Next.d;
+                Date_Start_Cal.week_d = Date_Start_Cal_Next.week_d;
+
+                Date_Start_Cal_Next.y = 0;
+                Date_Start_Cal_Next.m = 0;
+                Date_Start_Cal_Next.d = 0;
+                Date_Start_Cal_Next.week_d = 0;
+
+                Bar_Status(0, 0);
+                printf("Next Month\n");
+                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+                // reset off day
+                Cal_Off_Date_Count = 0;
+
+                // reset all time work
+                for (int dc=0; dc<doctor_count; dc++) {
+                    Doctors[dc].time_work.count_time_work = 0;
+                }
+
+                Update_Files();
+
+                Sleep(5000);
+            
+            }
+
+        }
+
+        else if (Date_Login.m > Date_Start_Cal.m) {
+            Bar_Status(0, 0);
+            printf("%sIn The Month, The Program Calendar is Not Set (Month)%s\n", Color_Red, Color_Reset);
+            Sleep(5000);
+            Active_Calendar = 0;
+        }
+
+
+        if (Active_Calendar == 1 && Date_Start_Cal.d - Date_Login.d < 10) {
+            Bar_Status(0, 0);
+            printf("%sThe Next Month is Near, don't Forgot to Define it.%s\n", Color_Yellow, Color_Reset);
+            Sleep(5000);
+        }
+
+
+    } // if end 
 
 
 }
