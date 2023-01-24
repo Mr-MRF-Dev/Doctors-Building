@@ -170,6 +170,8 @@ void DP_Print_Work_Time(int doc_id);
 void DP_Visirs_Payment(int doc_id);
 void DP_Rent_Payment(int doc_id);
 
+void Patient_Panel(int pat_login_id);
+
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
 void Print_Month(int m);
@@ -350,8 +352,10 @@ void Sign_In_Function() {
 
                 if (strcmp(UserNameInput, Patients[i].code_n) == 0 && strcmp(PassWordInput, Patients[i].password) == 0 ) {
 
-                    printf("patient panel %d", i);
-                    Sleep(3000);
+                    Bar_Status(3, i);
+                    printf("Login was Successful ~ %s%s%s\n", Color_Deep_Pink, Patients[i].name, Color_Reset);
+                    Sleep(1500);
+                    Patient_Panel(i);
                     return;
 
                 }
@@ -531,6 +535,11 @@ void Bar_Status(int login, int id) {
     //login as doctor
     else if (login == 2) {
         printf("\n%s#D%d%s %s %s>>> %s", Color_Blue, id, Color_Green, Doctors[id].name , Color_Aqua, Color_Reset);
+    }
+
+    //login as patient
+    else if (login == 3) {
+        printf("\n%s#P%d%s %s %s>>> %s", Color_Blue, id, Color_Deep_Pink, Patients[id].name , Color_Aqua, Color_Reset);
     }
 
 
@@ -2310,6 +2319,72 @@ void DP_Rent_Payment(int doc_id) {
 
     } // while end
 
+
+}
+
+
+
+void Patient_Panel(int pat_login_id) {
+    
+    while (1) {
+        
+        RUN_CLS;
+
+        Bar_Status(3, pat_login_id);
+        printf("Patient Panel:\n\n");
+        printf("    %s1 %s> %sBook an Appointment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sCancel an Appointment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sAll Appointments\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s4 %s> %sPrescriptions\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s5 %s> %sExit ~ Logout\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(3, pat_login_id);
+        printf("Select one More: ");
+
+        int DocInput = User_Input_Number_Range(1, 5);
+
+        Sleep(500);
+
+        if (DocInput == -1) continue;
+
+        if (DocInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Run Exit Function.\n");
+            Exit_Function(3, 0, pat_login_id);
+        }
+
+        switch (DocInput) {
+        
+            case 1:
+                //
+                break;
+            
+            case 2:
+                //
+                break;
+            
+            case 3:
+                // 
+                break;
+            
+            case 4:
+                // 
+                break;
+            
+            case 5:
+                Bar_Status(3, pat_login_id);
+                printf("logout Successful.\n");
+                Sleep(2000);
+                return;
+                break;
+            
+
+        } // switch end
+    
+
+    } // while end
 
 }
 
