@@ -107,6 +107,12 @@ typedef struct doctor {
     char password[PASSWORD_SIZE];
 
     int visit_pay;
+
+    int pay_rent_ext;
+    int pay_not_month;
+    int pay_total;
+
+    date pay_deadline;
     
     doc_time_work time_work;
 
@@ -148,6 +154,7 @@ void Exit_Function(int bar_status_code, int exit_code, int login_code);
 void Bar_Status(int login, int id);
 void Main_Func_Get_User_Date();
 void Main_Check_Active_Calendar();
+void Main_Reset_Doctors();
 
 void Admin_Panel();
 void AP_Add_Doctor();
@@ -161,6 +168,7 @@ void DP_Determining_Shifts(int doc_id);
 void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d);
 void DP_Print_Work_Time(int doc_id);
 void DP_Visirs_Payment(int doc_id);
+void DP_Rent_Payment(int doc_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -715,6 +723,22 @@ void AP_Add_Doctor() {
         doc.id = doctor_count;
         doc.visit_pay = 0;
 
+        doc.pay_rent_ext = 0;
+        doc.pay_not_month = 1;
+        doc.pay_total = Date_Start_Cal.d * 10;
+
+
+        int d_l_m = Date_Start_Cal.m + 1;
+        int d_l_y = Date_Start_Cal.y;
+
+        if (d_l_m > 12) {
+            d_l_m -= 12;
+            d_l_y += 1;
+        }
+
+        doc.pay_deadline.m = d_l_m;
+        doc.pay_deadline.y = d_l_y;
+
 
         // Find a duplicate doctor
         int flag = 0;
@@ -801,15 +825,18 @@ void AP_Doctors_List() {
         printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
         printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
         printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
-        printf("    %sWallet:           %s%d\n", Color_Green, Color_Reset, doc.wallet);
+        printf("    %sWallet:           %s%d$\n", Color_Green, Color_Reset, doc.wallet);
+        printf("    %sRent:             %s%d$\n", Color_Green, Color_Reset, doc.pay_total);
+        printf("    %sDeadLine:         %s%d/%d\n", Color_Green, Color_Reset, doc.pay_deadline.y, doc.pay_deadline.m);
+
 
         printf("  ------------------------------\n");
     
     }
 
     printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
-
     printf("%c\n", (char)getch() );
+    Sleep(500);
 
 }
 
@@ -990,8 +1017,8 @@ void AP_Patients_List() {
     }
 
     printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
-
     printf("%c\n", (char)getch() );
+    Sleep(500);
 
 }
 
@@ -1001,7 +1028,7 @@ void AP_Monthly_Schedule() {
 
     RUN_CLS;
 
-    // Main_Check_Active_Calendar()
+    // Main_Check_Active_Calendar();
 
     if (Active_Calendar == 0) {
 
@@ -1011,13 +1038,19 @@ void AP_Monthly_Schedule() {
 
             RUN_CLS;
 
+            int year_in;
+            int month_in;
+            int day_in;
+            int week_day_in;
+
             Bar_Status(1, 0);
             printf("Set Calendar (Ctrl+C ~ Back to Admin Panel)\n");
+            
 
             Bar_Status(1, 0);
             printf("Year: ");
             
-            int year_in = User_Input_Number_Range(1, 9999);
+            year_in = User_Input_Number_Range(1, 9999);
 
             if (year_in == -1) continue;
 
@@ -1031,7 +1064,7 @@ void AP_Monthly_Schedule() {
             Bar_Status(1, 0);
             printf("Month: ");
             
-            int month_in = User_Input_Number_Range(1, 12);
+            month_in = User_Input_Number_Range(1, 12);
 
             if (month_in == -1) continue;
 
@@ -1049,7 +1082,6 @@ void AP_Monthly_Schedule() {
             printf("%c\n", (char)x);
 
 
-            int day_in;
             if (x == 'y' || x == 'Y') {
 
                 if (1 <= month_in && month_in <= 6) day_in = 31;
@@ -1087,7 +1119,7 @@ void AP_Monthly_Schedule() {
             Bar_Status(1, 0);
             printf("Start WeekDay (0~Sat, 1~Sun, 2~Mon, 3~Tue, 4~Wed, 5~Thu, 6~Fri): ");
 
-            int week_day_in = User_Input_Number_Range(0, 6);
+            week_day_in = User_Input_Number_Range(0, 6);
 
             if (week_day_in == -1) continue;
 
@@ -1096,6 +1128,17 @@ void AP_Monthly_Schedule() {
                 Sleep(3000);
                 return;
             }
+
+
+            if ( year_in != Date_Login.y || (year_in == Date_Login.y && month_in != Date_Login.m) || (year_in == Date_Login.y && month_in == Date_Login.m &&  day_in < Date_Login.d) ) {
+
+                Bar_Status(1, 0);
+                printf("The Date you Entered with is not Defined in the Calendar, Try Again\n");
+                Sleep(3000);
+                continue;
+
+            }
+
 
             Date_Start_Cal.y = year_in;
             Date_Start_Cal.m = month_in;
@@ -1107,11 +1150,7 @@ void AP_Monthly_Schedule() {
             Date_Start_Cal_Next.d = 0;
             Date_Start_Cal_Next.week_d = 0;
 
-            // reset all doctor info
-            for (int dc=0; dc<doctor_count; dc++) {
-                Doctors[dc].time_work.count_time_work = 0;
-                Doctors[dc].visit_pay = 0;
-            }
+            // Main_Reset_Doctors();
 
             Cal_Off_Date_Count = 0;
             Active_Calendar = 1;
@@ -1384,6 +1423,8 @@ void AP_Monthly_Schedule() {
                     if (x == 'y' || x == 'Y') {
                         week_day_in = Date_Start_Cal.d % 7 + Date_Start_Cal.week_d;
                         
+                        week_day_in = (week_day_in > 6) ? (week_day_in - 7) : (week_day_in);
+
                         Bar_Status(1, 0);
                         printf("Next Month Start Weekday (SYS AUTO): ");
                         Print_WeekDay(week_day_in);
@@ -1507,7 +1548,7 @@ void Doctor_Panel(int doc_login_id) {
                 break;
             
             case 5:
-                //
+                DP_Rent_Payment(doc_login_id);
                 break;
             
             case 6:
@@ -2113,6 +2154,162 @@ void DP_Visirs_Payment(int doc_id) {
         break;
 
     } // while end
+
+}
+
+
+
+void DP_Rent_Payment(int doc_id) {
+
+    while (1) {
+
+        RUN_CLS;
+
+        Bar_Status(2, doc_id);
+        printf("Rent Payment ~ Wallet: %d$\n\n", Doctors[doc_id].wallet);
+        printf("    %s1 %s> %sExtension\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sPayment\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sBack\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(2, doc_id);
+        printf("Select one More: ");
+
+        int RentInput = User_Input_Number_Range(1, 3);
+
+        Sleep(500);
+
+        if (RentInput == -1) continue;
+
+        if (RentInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        switch (RentInput) {
+        
+            case 1:
+
+                if (Doctors[doc_id].pay_rent_ext == 0) {
+                    
+                    if (Doctors[doc_id].pay_not_month != 0) {
+
+                        Bar_Status(2, doc_id);
+                        printf("This Month's Payment was Transferred to the Next Month\n");
+                        Doctors[doc_id].pay_rent_ext = 1;
+
+                        Update_Files();
+
+                    }
+
+                    else {
+
+                        Bar_Status(2, doc_id);
+                        printf("This Month's Money has Already Been Paid\n");
+
+                    }
+
+                }
+
+                else {
+                    
+                    if (Doctors[doc_id].pay_not_month == 1) {
+                        Bar_Status(2, doc_id);
+                        printf("This Option Was Used This Month\n");
+                    }
+
+                    else {
+                        Bar_Status(2, doc_id);
+                        printf("This Option Was Used Last Month\n");
+                    }
+
+                
+                }
+
+                Sleep(5000);
+                break;
+
+
+            case 2:
+                
+                if (Doctors[doc_id].pay_rent_ext == 1 && Doctors[doc_id].pay_not_month == 1) {
+                    Bar_Status(2, doc_id);
+                    printf("This Month's Payment is transferred to the Next Month. Come Back Next Month\n");
+                }
+
+                else {
+                    Bar_Status(2, doc_id);
+                    printf("Your debt is %d$, Do you Want to Pay? (y/n) ", Doctors[doc_id].pay_total);
+
+                    int x = getch();
+                    printf("%c\n", x);
+                    
+                    if ( x == 'y' || x == 'Y') {
+                        
+                        if (Doctors[doc_id].wallet < Doctors[doc_id].pay_total) {
+
+                            Bar_Status(2, doc_id);
+                            printf("You Have no Money\n");
+
+                        }
+
+                        else {
+                            
+                            Doctors[doc_id].wallet -= Doctors[doc_id].pay_total;
+                            Doctors[doc_id].pay_not_month = 0;
+                            Doctors[doc_id].pay_rent_ext = 0;
+                            Doctors[doc_id].pay_total = 0;
+
+                            int d_l_m = Date_Start_Cal.m + 2;
+                            int d_l_y = Date_Start_Cal.y;
+
+                            if (d_l_m > 12) {
+                                d_l_m -= 12;
+                                d_l_y += 1;
+                            }
+
+                            Doctors[doc_id].pay_deadline.m = d_l_m;
+                            Doctors[doc_id].pay_deadline.y = d_l_y;
+                            
+                            Update_Files();
+
+                            Bar_Status(2, doc_id);
+                            printf("%sPayment was Successful%s ~ Wallet: %d$\n", Color_Green, Color_Reset, Doctors[doc_id].wallet);
+
+                        }
+                        
+                    }
+
+                    else {
+                        Bar_Status(2, doc_id);
+                        printf("The Payment was Cancelled\n");
+                    }
+
+                }
+
+
+                Sleep(5000);
+                break;
+
+
+            case 3:
+                Bar_Status(2, doc_id);
+                printf("Back\n");
+                Sleep(3000);
+                return;
+                break;
+            
+            
+        } // switch end
+
+        break;
+
+    } // while end
+
 
 }
 
@@ -2781,7 +2978,7 @@ void Main_Func_Get_User_Date() {
         RUN_CLS;
         
         Bar_Status(0, 0);
-        printf("Enter Today's Date (Ctrl+C ~ Exit)\n");
+        printf("Enter Today's Date (Ctrl+C ~ Reset)\n");
 
 
         Bar_Status(0, 0);
@@ -2791,11 +2988,7 @@ void Main_Func_Get_User_Date() {
 
         if (year_in == -1) continue;
 
-        if (year_in == -2) {
-            printf("\n");
-            Exit_Function(0, 0, 0);
-            break;
-        }
+        if (year_in == -2) continue;
 
 
         Bar_Status(0, 0);
@@ -2805,11 +2998,7 @@ void Main_Func_Get_User_Date() {
 
         if (month_in == -1) continue;
 
-        if (month_in == -2) {
-            printf("\n");
-            Exit_Function(0, 0, 0);
-            break;
-        }
+        if (month_in == -2) continue;
 
 
         Bar_Status(0, 0);
@@ -2819,11 +3008,7 @@ void Main_Func_Get_User_Date() {
 
         if (day_in == -1) continue;
 
-        if (day_in == -2) {
-            printf("\n");
-            Exit_Function(0, 0, 0);
-            break;
-        }
+        if (day_in == -2) continue;
 
 
         int flag_bad_date = 0;
@@ -2847,7 +3032,7 @@ void Main_Func_Get_User_Date() {
         Date_Login.d = day_in;
 
 
-        Sleep(3000);
+        Sleep(1500);
         break;
     
 
@@ -2888,6 +3073,8 @@ void Main_Check_Active_Calendar() {
             }
 
             else {
+                
+                RUN_CLS;
 
                 Bar_Status(0, 0);
                 printf("%sSystem: Auto Go To Next Month%s\n", Color_Green, Color_Reset);
@@ -2917,17 +3104,16 @@ void Main_Check_Active_Calendar() {
 
                 // reset off day
                 Cal_Off_Date_Count = 0;
-
-                // reset all doctor info
-                for (int dc=0; dc<doctor_count; dc++) {
-                    Doctors[dc].time_work.count_time_work = 0;
-                    Doctors[dc].visit_pay = 0;
-                }
+                Active_Calendar = 1;
 
                 Update_Files();
 
-                Sleep(5000);
-            
+                Main_Reset_Doctors();
+
+                printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                printf("%c\n", (char)getch() );
+                Sleep(500);
+
             }
 
         }
@@ -2949,6 +3135,80 @@ void Main_Check_Active_Calendar() {
 
     } // if end 
 
+    if (Active_Calendar == 0) {
+
+        Main_Reset_Doctors();
+
+        printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+        printf("%c\n", (char)getch() );
+        Sleep(500);
+
+    }
+
+
+}
+
+
+
+void Main_Reset_Doctors() {
+
+    // reset all doctor info
+    for (int dc=0; dc<doctor_count; dc++) {
+
+        Doctors[dc].time_work.count_time_work = 0;
+        Doctors[dc].visit_pay = 0;
+
+
+        if (Doctors[dc].pay_deadline.y == Date_Login.y && Doctors[dc].pay_deadline.m < Date_Login.m) {
+            
+            Doctors[dc].pay_not_month = -1;
+
+        }
+
+        else if (Doctors[dc].pay_deadline.y < Date_Login.y) {
+
+            Doctors[dc].pay_not_month = -1;
+
+        }
+
+        
+        Doctors[dc].pay_not_month++;
+
+
+        if (Doctors[dc].pay_not_month == 1) {
+
+            Doctors[dc].pay_total = Date_Start_Cal.d * 10;
+        
+        }
+
+        else if (Doctors[dc].pay_not_month == 2) {
+
+            Doctors[dc].pay_total += Date_Start_Cal.d * 10;
+            Doctors[dc].pay_rent_ext = 1;
+        
+        }
+
+        // kick doctor
+        else {
+
+            Bar_Status(0, 0);
+            printf("Doctor %s was Fired from the Building\n", Doctors[dc].name);
+
+            for (int j = dc; j < doctor_count - 1; j++) {
+                
+                Doctors[j] = Doctors[j+1];
+                Doctors[j].id--;
+
+            }
+
+            doctor_count--;
+            dc--;
+
+        }
+
+    }
+
+    Update_Files();
 
 }
 
