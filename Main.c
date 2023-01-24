@@ -48,7 +48,7 @@ int run_cls = 1;
 #define EMAIL_SIZE 51
 #define NATIONAL_CODE_SIZE 11
 #define PASSWORD_SIZE 31
-#define TEXT_SIZE 201
+#define PRESCRIPTION_SIZE 201
 
 
 
@@ -159,7 +159,7 @@ typedef struct visit {
     int see_visit;
     int doc_pay_visit;
 
-    char text[TEXT_SIZE];
+    char Prescription[PRESCRIPTION_SIZE];
 
 } visit;
 
@@ -187,6 +187,7 @@ void AP_Doctors_List();
 void AP_Add_Patient();
 void AP_Patients_List();
 void AP_Monthly_Schedule();
+void AP_Visits_Schedule();
 
 void Doctor_Panel(int doc_login_id);
 void DP_Determining_Shifts(int doc_id);
@@ -198,6 +199,7 @@ void DP_Rent_Payment(int doc_id);
 void Patient_Panel(int pat_login_id);
 void PP_Book_An_Appointment(int pat_id);
 int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
+int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -486,6 +488,8 @@ void Forgot_Password_Function() {
                             return;
                         }
 
+                        Hash_Function(PassWordInput);
+
                         strcpy(Doctors[i].password, PassWordInput);
                         Update_Files();
 
@@ -521,6 +525,8 @@ void Forgot_Password_Function() {
                             Sleep(3000);
                             return;
                         }
+
+                        Hash_Function(PassWordInput);
 
                         strcpy(Patients[i].password, PassWordInput);
                         Update_Files();
@@ -580,6 +586,7 @@ void Bar_Status(int login, int id) {
 
 
 
+//! ok
 void Admin_Panel() {
 
     while (1) {
@@ -656,7 +663,7 @@ void Admin_Panel() {
                 }
             
             case 7:
-                /* code */
+                AP_Visits_Schedule();
                 break;
             
             case 8:
@@ -771,7 +778,7 @@ void AP_Add_Doctor() {
         doc.pay_total = Date_Start_Cal.d * 10;
 
 
-        int d_l_m = Date_Start_Cal.m + 1;
+        int d_l_m = Date_Start_Cal.m;
         int d_l_y = Date_Start_Cal.y;
 
         if (d_l_m > 12) {
@@ -871,7 +878,9 @@ void AP_Doctors_List() {
         printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
         printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
         printf("    %sWallet:           %s%d$\n", Color_Green, Color_Reset, doc.wallet);
+        printf("    %sCost Visit:       %s%d$\n", Color_Green, Color_Reset, doc.visit_pay);
         printf("    %sRent:             %s%d$\n", Color_Green, Color_Reset, doc.pay_total);
+        printf("    %sIs Extension:     %s%d\n", Color_Green, Color_Reset, doc.pay_rent_ext);
         printf("    %sDeadLine:         %s%d/%d\n", Color_Green, Color_Reset, doc.pay_deadline.y, doc.pay_deadline.m);
 
 
@@ -1060,7 +1069,7 @@ void AP_Patients_List() {
         printf("    %sNational Code:     %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
         printf("    %sPatient Email:     %s%s\n", Color_Yellow, Color_Reset, pat.email);
         printf("    %sPatient ID:        %s%d\n", Color_Green, Color_Reset, pat.id);
-        printf("    %sWallet:vvvv        %s%d$\n", Color_Green, Color_Reset, pat.wallet);
+        printf("    %sWallet:            %s%d$\n", Color_Green, Color_Reset, pat.wallet);
 
         printf("  ------------------------------\n");
     
@@ -1554,6 +1563,163 @@ void AP_Monthly_Schedule() {
 
 
 
+//! ok
+void AP_Visits_Schedule() {
+
+    while(1) {
+
+        RUN_CLS;
+
+        Bar_Status(1, 0);
+        printf("Visits Schedule:\n\n");
+        printf("    %s1 %s> %sAll\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s2 %s> %sChoose Doctor\n", Color_Yellow, Color_Aqua, Color_Reset);
+        printf("    %s3 %s> %sBack\n", Color_Yellow, Color_Aqua, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(1, 0);
+        printf("Select one More: ");
+
+        int AdminInput = User_Input_Number_Range(1, 3);
+
+        Sleep(500);
+
+        if (AdminInput == -1) continue;
+
+        if (AdminInput == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        switch(AdminInput) {
+            
+            case 1:
+
+                RUN_CLS;
+
+                printf("\n    %sAll Visits%s\n", Color_Purple, Color_Reset);
+                printf("  ------------------------------\n");
+
+                for (int i=0; i < visit_count; i++) {
+                    
+                    visit vis = Visits[i];
+
+                    printf("    %sVisit ID: %d, Cost: %d$%s\n", Color_Yellow, vis.id, vis.doc_pay_visit, Color_Reset);
+                    printf("    %sDate: %d/%d/%d, ", Color_Blue, vis.Date.y, vis.Date.m, vis.Date.d);
+                    printf("Time: %d ~ %d%s\n\n", vis.start_time, vis.start_time+1, Color_Reset);
+
+                    printf("    %sDoctor Name: %s%s%s\n", Color_Green, Color_Gray, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name, Color_Reset);
+                    printf("    %sPatients Name: %s%s%s\n\n", Color_Green, Color_Gray, Patients[PP_Find_Patient_By_N_Code(vis.pat_code_n)].name, Color_Reset);
+                    
+                    if (vis.see_visit) {
+                        printf("    Prescription: %s\n", vis.Prescription);    
+                    }
+
+                    else {
+                        printf("    The Doctor did not Check this Visit!\n");    
+                    }
+
+                    printf("  ------------------------------\n");
+                }
+
+                printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                printf("%c\n", (char)getch() );
+                Sleep(500);
+                break;
+
+
+            case 2:
+
+                RUN_CLS;
+
+                printf("\n    %s ID | Name\n%s", Color_Gray, Color_Reset);
+                printf("    %s---------------------------%s\n", Color_Gray, Color_Reset);
+
+                for (int i=0; i<doctor_count; i++) {
+                    printf("    %3d %s|%s %s\n", i+1, Color_Gray, Color_Reset, Doctors[i].name);
+                }
+                
+                printf("    %s---------------------------%s\n\n", Color_Gray, Color_Reset);
+
+                Sleep(500);
+
+                Bar_Status(1, 0);
+                printf("Select one More: ");
+
+                int DocSelect = User_Input_Number_Range(1, doctor_count);
+
+                Sleep(500);
+
+                if (DocSelect == -1) continue;
+
+                if (DocSelect == -2) {
+                    // ctrl + c ~ code -2
+                    printf("Back\n");
+                    Sleep(3000);
+                    return;
+                }
+
+                DocSelect--;
+
+                RUN_CLS;
+
+                printf("\n    %sAll Visits ~ Doctor: %s %s\n", Color_Purple, Doctors[DocSelect].name, Color_Reset);
+                printf("  ------------------------------\n");
+
+                for (int i=0; i < visit_count; i++) {
+                    
+                    visit vis = Visits[i]; 
+
+                    if ( strcmp(vis.doc_code_n, Doctors[DocSelect].code_n) == 0) {
+
+                        printf("    %sVisit ID: %d, Cost: %d$%s\n", Color_Yellow, vis.id, vis.doc_pay_visit, Color_Reset);
+                        printf("    %sDate: %d/%d/%d, ", Color_Blue, vis.Date.y, vis.Date.m, vis.Date.d);
+                        printf("Time: %d ~ %d%s\n\n", vis.start_time, vis.start_time+1, Color_Reset);
+
+                        printf("    %sPatients Name: %s%s%s\n\n", Color_Green, Color_Gray, Patients[PP_Find_Patient_By_N_Code(vis.pat_code_n)].name, Color_Reset);
+                        
+                        if (vis.see_visit) {
+                            printf("    Prescription: %s\n", vis.Prescription);    
+                        }
+
+                        else {
+                            printf("    The Doctor did not Check this Visit!\n");    
+                        }
+
+                        printf("  ------------------------------\n");
+
+                    }
+
+                }
+
+                printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                printf("%c\n", (char)getch() );
+                Sleep(500);
+                break;
+                break;
+
+            case 3:
+                Bar_Status(1, 0);
+                printf("Back\n");
+                Sleep(3000);
+                return;
+                break;
+
+        } // switch end
+
+        break;
+
+    } // while end
+
+}
+
+
+
+
 void Doctor_Panel(int doc_login_id) {
     
     while (1) {
@@ -1942,6 +2108,14 @@ void DP_Determining_Shifts(int doc_id) {
                     }
 
 
+                    if (start_time >= end_time) {
+                        Bar_Status(2, doc_id);
+                        printf("The Start and End Times Do Not Match\n");
+                        Sleep(5000);
+                        continue;
+                    }
+
+
                     int tmp_day = 1 + (input_week - Date_Start_Cal.week_d);
 
                     for (; tmp_day <= Date_Start_Cal.d; tmp_day += 7) {
@@ -2272,6 +2446,17 @@ void DP_Rent_Payment(int doc_id) {
                         printf("This Month's Payment was Transferred to the Next Month\n");
                         Doctors[doc_id].pay_rent_ext = 1;
 
+                        int d_l_m = Date_Start_Cal.m + 1;
+                        int d_l_y = Date_Start_Cal.y;
+
+                        if (d_l_m > 12) {
+                            d_l_m -= 12;
+                            d_l_y += 1;
+                        }
+
+                        Doctors[doc_id].pay_deadline.m = d_l_m;
+                        Doctors[doc_id].pay_deadline.y = d_l_y;
+
                         Update_Files();
 
                     }
@@ -2323,7 +2508,7 @@ void DP_Rent_Payment(int doc_id) {
                         if (Doctors[doc_id].wallet < Doctors[doc_id].pay_total) {
 
                             Bar_Status(2, doc_id);
-                            printf("You Have no Money\n");
+                            printf("You Have no Money. ¯\\_(ツ)_/¯\n");
 
                         }
 
@@ -2334,7 +2519,7 @@ void DP_Rent_Payment(int doc_id) {
                             Doctors[doc_id].pay_rent_ext = 0;
                             Doctors[doc_id].pay_total = 0;
 
-                            int d_l_m = Date_Start_Cal.m + 2;
+                            int d_l_m = Date_Start_Cal.m + 1;
                             int d_l_y = Date_Start_Cal.y;
 
                             if (d_l_m > 12) {
@@ -2500,6 +2685,13 @@ void PP_Book_An_Appointment(int pat_id) {
             continue;
         }
 
+        if (Doctors[DocSelect].visit_pay == 0) {
+            Bar_Status(3, pat_id);
+            printf("The Doctor dont Set Visit Pay\n");
+            Sleep(3000);
+            continue;
+        }
+
 
         while(1) {
 
@@ -2582,10 +2774,10 @@ void PP_Book_An_Appointment(int pat_id) {
                 }
 
                 if (find_flag) 
-                    printf("    %s %d --- %d ~ Reserved%s\n", Color_Red, tmp, tmp+1, Color_Reset);
+                    printf("    %s %2d --- %2d ~ Reserved%s\n", Color_Red, tmp, tmp+1, Color_Reset);
 
                 else
-                    printf("    %s %d --- %d %s\n", Color_Green, tmp, tmp+1, Color_Reset);
+                    printf("    %s %2d --- %2d %s\n", Color_Green, tmp, tmp+1, Color_Reset);
     
 
             } // for end
@@ -2689,6 +2881,25 @@ int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
     for (int i=0; i<doctor_count; i++) {
 
         if ( strcmp(Doctors[i].code_n, n_code) == 0) {
+
+            return i;
+
+        }
+
+    }
+
+    return -1;
+
+}
+
+
+
+//! ok
+int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
+    
+    for (int i=0; i<patient_count; i++) {
+
+        if ( strcmp(Patients[i].code_n, n_code) == 0) {
 
             return i;
 
@@ -3623,11 +3834,10 @@ void Main_Reset_Doctors() {
         
         }
 
-        else if (Doctors[dc].pay_not_month == 2) {
+        else if (Doctors[dc].pay_not_month == 2 && Doctors[dc].pay_rent_ext == 1 ) {
 
             Doctors[dc].pay_total += Date_Start_Cal.d * 10;
-            Doctors[dc].pay_rent_ext = 1;
-        
+            
         }
 
         // kick doctor
@@ -3733,7 +3943,6 @@ void Print_Month(int m) {
     }
 
 }
-
 
 
 
