@@ -47,6 +47,7 @@ int run_cls = 1;
 #define EMAIL_SIZE 51
 #define NATIONAL_CODE_SIZE 11
 #define PASSWORD_SIZE 31
+#define TEXT_SIZE 201
 
 
 
@@ -69,7 +70,7 @@ int Active_Calendar = 0;
 date Date_Start_Cal;
 date Date_Start_Cal_Next = {0, 0, 0, 0};
 date Date_Start_Cal_Last = {0, 0, 0, 0};
-date Date_Login; 
+date Date_Login = {0, 0, 0, 0}; 
 
 
 typedef struct off_date {
@@ -111,7 +112,6 @@ typedef struct doctor {
     int pay_rent_ext;
     int pay_not_month;
     int pay_total;
-
     date pay_deadline;
     
     doc_time_work time_work;
@@ -128,6 +128,7 @@ char doctor_file_path[] = "doctor.bin";
 //* Patient
 typedef struct patient {
     int id;
+    int wallet;
     char name[NAME_SIZE];
     char email[EMAIL_SIZE];
     char code_n[NATIONAL_CODE_SIZE];
@@ -143,6 +144,28 @@ patient Patients[PATIENT_MAX_COUNT];
 char patient_file_path[] = "patient.bin";
 
 
+//* Visit
+typedef struct visit {
+    
+    int id;
+    char doc_code_n[NATIONAL_CODE_SIZE];
+    char pat_code_n[NATIONAL_CODE_SIZE];
+
+    date Date;
+
+    int start_time;
+
+    int see_visit;
+    int doc_pay_visit;
+
+    char text[TEXT_SIZE];
+
+} visit;
+
+int visit_count = 0;
+#define VISIT_MAX_COUNT 1000
+visit Visits[VISIT_MAX_COUNT];
+char visit_file_path[] = "visit.bin";
 
 
 
@@ -171,6 +194,8 @@ void DP_Visirs_Payment(int doc_id);
 void DP_Rent_Payment(int doc_id);
 
 void Patient_Panel(int pat_login_id);
+void PP_Book_An_Appointment(int pat_id);
+int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -935,6 +960,7 @@ void AP_Add_Patient() {
 
 
         pat.id = patient_count;
+        pat.wallet = 1000;
 
 
         // Find a duplicate Patient
@@ -1020,6 +1046,7 @@ void AP_Patients_List() {
         printf("    %sNational Code:     %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
         printf("    %sPatient Email:     %s%s\n", Color_Yellow, Color_Reset, pat.email);
         printf("    %sPatient ID:        %s%d\n", Color_Green, Color_Reset, pat.id);
+        printf("    %sWallet:vvvv        %s%d$\n", Color_Green, Color_Reset, pat.wallet);
 
         printf("  ------------------------------\n");
     
@@ -1140,11 +1167,24 @@ void AP_Monthly_Schedule() {
 
 
             if ( year_in != Date_Login.y || (year_in == Date_Login.y && month_in != Date_Login.m) || (year_in == Date_Login.y && month_in == Date_Login.m &&  day_in < Date_Login.d) ) {
+                
+                if (Date_Login.y == 0 && Date_Login.m == 0 && Date_Login.d == 0) {
 
-                Bar_Status(1, 0);
-                printf("The Date you Entered with is not Defined in the Calendar, Try Again\n");
-                Sleep(3000);
-                continue;
+                    Bar_Status(1, 0);
+                    printf("Your Login Date Auto Set: %d/%d/%d\n", year_in, month_in, 1);
+
+                    Date_Login.y = year_in;
+                    Date_Login.m = month_in;
+                    Date_Login.d = 1;
+
+                }
+
+                else {
+                    Bar_Status(1, 0);
+                    printf("The Date you Entered with is not Defined in the Calendar, Try Again\n");
+                    Sleep(3000);
+                    continue;
+                }
 
             }
 
@@ -1162,6 +1202,7 @@ void AP_Monthly_Schedule() {
             // Main_Reset_Doctors();
 
             Cal_Off_Date_Count = 0;
+            visit_count =0;
             Active_Calendar = 1;
             Update_Files();
 
@@ -2331,7 +2372,7 @@ void Patient_Panel(int pat_login_id) {
         RUN_CLS;
 
         Bar_Status(3, pat_login_id);
-        printf("Patient Panel:\n\n");
+        printf("Patient Panel: (Wallet: %d$)\n\n", Patients[pat_login_id].wallet);
         printf("    %s1 %s> %sBook an Appointment\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sCancel an Appointment\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sAll Appointments\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -2343,22 +2384,22 @@ void Patient_Panel(int pat_login_id) {
         Bar_Status(3, pat_login_id);
         printf("Select one More: ");
 
-        int DocInput = User_Input_Number_Range(1, 5);
+        int PatInput = User_Input_Number_Range(1, 5);
 
         Sleep(500);
 
-        if (DocInput == -1) continue;
+        if (PatInput == -1) continue;
 
-        if (DocInput == -2) {
+        if (PatInput == -2) {
             // ctrl + c ~ code -2
             printf("Run Exit Function.\n");
             Exit_Function(3, 0, pat_login_id);
         }
 
-        switch (DocInput) {
+        switch (PatInput) {
         
             case 1:
-                //
+                PP_Book_An_Appointment(pat_login_id);
                 break;
             
             case 2:
@@ -2385,6 +2426,255 @@ void Patient_Panel(int pat_login_id) {
     
 
     } // while end
+
+}
+
+
+
+void PP_Book_An_Appointment(int pat_id) {
+
+    while(1) {
+
+        RUN_CLS;
+
+        Bar_Status(3, pat_id);
+        printf("Book an Appointment ~ Wallet: %d$\n\n", Patients[pat_id].wallet);
+
+
+        printf("    %s ID | Name\n%s", Color_Gray, Color_Reset);
+        printf("    %s---------------------------%s\n", Color_Gray, Color_Reset);
+
+        for (int i=0; i<doctor_count; i++) {
+            printf("    %3d %s|%s %s\n", i+1, Color_Gray, Color_Reset, Doctors[i].name);
+        }
+        
+        printf("    %s---------------------------%s\n\n", Color_Gray, Color_Reset);
+
+        Sleep(500);
+
+        Bar_Status(3, pat_id);
+        printf("Select one More: ");
+
+        int DocSelect = User_Input_Number_Range(1, doctor_count);
+
+        Sleep(500);
+
+        if (DocSelect == -1) continue;
+
+        if (DocSelect == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        DocSelect--;
+
+
+        if (Doctors[DocSelect].time_work.count_time_work == 0) {
+            Bar_Status(3, pat_id);
+            printf("The Doctor dont Set Shift\n");
+            Sleep(3000);
+            continue;
+        }
+
+
+        while(1) {
+
+            RUN_CLS;
+
+
+            printf("    %sDoctor Shifts ~%s %s\n", Color_Gray, Color_Reset, Doctors[DocSelect].name );
+
+            DP_Print_Calendar(DocSelect, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+        
+            Sleep(500);
+
+            Bar_Status(3, pat_id);
+            printf("Select one Green Day: ");
+
+            int DaySelect = User_Input_Number_Range(1, 31);
+
+            if (DaySelect == -1) continue;
+
+            if (DaySelect == -2) {
+                printf("Back\n");
+                Sleep(3000);
+                return;
+            }
+
+
+            int find_work_i = -1;
+            for (int i=0; i < Doctors[DocSelect].time_work.count_time_work; i++) {
+
+                if (DaySelect == Doctors[DocSelect].time_work.date_time_work_arr[i].d) {
+
+                    find_work_i = i;
+                    break;
+
+                }
+
+            }
+
+            if (find_work_i == -1) {
+             
+                Bar_Status(3, pat_id);
+                printf("This Day the Doctor is Not in the Office\n");
+                Sleep(3000);
+             
+                continue;
+            }
+
+
+            int start_time_work = Doctors[DocSelect].time_work.start_time_work_arr[find_work_i];
+            int end_time_work = Doctors[DocSelect].time_work.end_time_work_arr[find_work_i];
+
+
+            RUN_CLS;
+
+            Bar_Status(3, pat_id);
+            printf("Doctor: %s, Day: %d, Cost: %d$\n\n", Doctors[DocSelect].name, DaySelect, Doctors[DocSelect].visit_pay);
+
+
+            for (int tmp = start_time_work; tmp < end_time_work; tmp++) {
+
+                int find_flag = 0;
+
+                for (int i = 0; i < visit_count; i++ ) {
+
+                    if (PP_Find_Doctor_By_N_Code(Visits[i].doc_code_n) == DocSelect) {
+                        
+                        if (Visits[i].Date.d == DaySelect && Visits[i].Date.m == Date_Start_Cal.m && Visits[i].Date.y == Date_Start_Cal.y) {
+
+                            if (Visits[i].start_time == tmp) {
+
+                                find_flag = 1;
+
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                if (find_flag) 
+                    printf("    %s %d --- %d ~ Reserved%s\n", Color_Red, tmp, tmp+1, Color_Reset);
+
+                else
+                    printf("    %s %d --- %d %s\n", Color_Green, tmp, tmp+1, Color_Reset);
+    
+
+            } // for end
+
+            Sleep(500);
+
+            Bar_Status(3, pat_id);
+            printf("Choose Your Desired Time: (Hour): ");
+
+            int TimeSelect = User_Input_Number_Range(1, 24);
+
+            if (TimeSelect == -1) continue;
+
+            if (TimeSelect == -2) {
+                printf("Back\n");
+                Sleep(3000);
+                return;
+            }
+        
+            int find_flag = 0;
+
+            for (int i = 0; i < visit_count; i++ ) {
+
+                if (PP_Find_Doctor_By_N_Code(Visits[i].doc_code_n) == DocSelect) {
+                    
+                    if (Visits[i].Date.d == DaySelect && Visits[i].Date.m == Date_Start_Cal.m && Visits[i].Date.y == Date_Start_Cal.y) {
+
+                        if (Visits[i].start_time == TimeSelect) {
+                            
+                            Bar_Status(3, pat_id);
+                            printf("This Time is Reserved\n");
+                            Sleep(3000);    
+                            find_flag = 1;
+                            break;
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if (find_flag) continue;
+
+            
+            visit vis;
+
+            strcpy(vis.doc_code_n, Doctors[DocSelect].code_n);
+            strcpy(vis.pat_code_n, Patients[pat_id].code_n);
+
+            vis.id = visit_count;
+            vis.see_visit = 0;
+            vis.start_time = TimeSelect;
+            vis.Date.d = DaySelect;
+            vis.Date.y = Date_Start_Cal.y;
+            vis.Date.m = Date_Start_Cal.m;
+            vis.doc_pay_visit = Doctors[DocSelect].visit_pay;
+
+
+            if (Patients[pat_id].wallet < vis.doc_pay_visit * 1.1) {
+
+                Bar_Status(3, pat_id);
+                printf("Your Money is not Enough\n");
+                Sleep(3000);
+
+            }
+
+            else {
+
+                Patients[pat_id].wallet -= vis.doc_pay_visit * 1.1;
+                
+                Visits[visit_count] = vis;
+                visit_count++;
+
+                Update_Files();
+
+                Bar_Status(3, pat_id);
+                printf("Your Appointment has been Successfully Booked (%.0lf$ Was Paid)\n", Doctors[DocSelect].visit_pay*1.1);
+                Sleep(3000);
+
+            }
+        
+
+            break;
+
+        } // while end
+
+        break;
+
+
+    } // while main end
+
+
+}
+
+
+
+int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
+
+    for (int i=0; i<doctor_count; i++) {
+
+        if ( strcmp(Doctors[i].code_n, n_code) == 0) {
+
+            return i;
+
+        }
+
+    }
+
+    return -1;
 
 }
 
@@ -2574,8 +2864,31 @@ void Get_Files() {
 
 
 
+    // Get Visit 
+    FILE *fp_Visit = fopen(visit_file_path, "rb");
 
-    Sleep(5000);
+    if (fp_Visit != NULL) {
+        
+        while (fread(&Visits[visit_count], sizeof(visit), 1, fp_Visit)) {
+            visit_count++;
+        }
+
+        printf("The file information was read successfully. %d Visit.\n", visit_count);
+
+    }
+
+    else printf("The file does not exist or could not be opened ~ (%s).\n", visit_file_path);
+
+    fclose(fp_Visit);
+
+
+    printf("------------------------------\n");
+
+
+
+    printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+    printf("%c\n", (char)getch() );
+    Sleep(500);
 
 }
 
@@ -2651,6 +2964,23 @@ void Update_Files() {
     }
 
     fclose(fp_off_date);
+
+
+
+    // Visit Update
+    FILE *fp_visit = fopen(visit_file_path, "wb");
+
+    if (fp_visit != NULL) {
+        
+        for(int i =0; i < visit_count; i++) {
+
+            fwrite(&Visits[i], sizeof(visit), 1, fp_visit);
+        
+        }
+
+    }
+
+    fclose(fp_visit);
 
 
 
@@ -3180,6 +3510,7 @@ void Main_Check_Active_Calendar() {
                 // reset off day
                 Cal_Off_Date_Count = 0;
                 Active_Calendar = 1;
+                visit_count = 0;
 
                 Update_Files();
 
@@ -3231,7 +3562,9 @@ void Main_Reset_Doctors() {
     for (int dc=0; dc<doctor_count; dc++) {
 
         Doctors[dc].time_work.count_time_work = 0;
-        Doctors[dc].visit_pay = 0;
+        
+        // Doctors[dc].visit_pay = 0;
+        
 
 
         if (Doctors[dc].pay_deadline.y == Date_Login.y && Doctors[dc].pay_deadline.m < Date_Login.m) {
