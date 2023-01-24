@@ -43,6 +43,7 @@ int run_cls = 1;
 
 
 //** Define Const Num
+#define CAPACITY 98765432100 // Size of the Hash
 #define NAME_SIZE 31
 #define EMAIL_SIZE 51
 #define NATIONAL_CODE_SIZE 11
@@ -173,6 +174,7 @@ char visit_file_path[] = "visit.bin";
 void Sign_In_Function();
 void Forgot_Password_Function();
 void Exit_Function(int bar_status_code, int exit_code, int login_code);
+void Hash_Function(char* str);
 
 void Bar_Status(int login, int id);
 void Main_Func_Get_User_Date();
@@ -357,6 +359,8 @@ void Sign_In_Function() {
         }
 
         else {
+
+            Hash_Function(PassWordInput);
             
             // Doctor Panel
             for (int i=0; i<doctor_count; i++) {
@@ -824,6 +828,7 @@ void AP_Add_Doctor() {
 
         if (flag) continue;
 
+        Hash_Function(doc.password);
 
         // Added Doctor in Struct List
         Doctors[doctor_count] = doc;
@@ -1014,7 +1019,8 @@ void AP_Add_Patient() {
 
         if (flag) continue;
 
-
+        Hash_Function(pat.password);
+    
         // Added Doctor in Struct List
         Patients[patient_count] = pat;
         patient_count++;
@@ -3725,6 +3731,51 @@ void Print_Month(int m) {
             printf("Esfand");
             break;
     }
+
+}
+
+
+
+
+//! ok
+void Hash_Function(char* str) {
+
+    unsigned long i = 0;
+
+
+    int count = 0;
+
+
+    for (count = 0; str[count]; count++) {
+        
+        i += str[count];
+
+        i *= 9;
+
+        i += count;
+
+        i = (i % 10 == 0)?(++i*4):(i*3);
+
+        i = (i % 7 == 0)?(i*2):(i*8);
+
+    }
+
+
+    i = i % CAPACITY;
+
+
+    for (int j = 0; j < count; j++) {
+
+        
+        if (j == 0) break;
+
+        str[j] = i % 10;
+
+        i /= 10;
+
+    }
+
+    str[count] = '\0';
 
 }
 
