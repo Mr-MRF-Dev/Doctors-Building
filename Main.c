@@ -196,6 +196,7 @@ void DP_Print_Work_Time(int doc_id);
 void DP_Visirs_Payment(int doc_id);
 void DP_Rent_Payment(int doc_id);
 void DP_Reserved_Visits(int doc_id);
+void DP_Patient_Prescription(int doc_id);
 
 void Patient_Panel(int pat_login_id);
 void PP_Book_An_Appointment(int pat_id);
@@ -1735,7 +1736,7 @@ void AP_Visits_Schedule() {
 
 
 
-
+//! ok
 void Doctor_Panel(int doc_login_id) {
     
     while (1) {
@@ -1743,7 +1744,7 @@ void Doctor_Panel(int doc_login_id) {
         RUN_CLS;
 
         Bar_Status(2, doc_login_id);
-        printf("Doctor Panel:\n\n");
+        printf("Doctor Panel (Wallet: %d$)\n\n", Doctors[doc_login_id].wallet);
         printf("    %s1 %s> %sDetermining The Shifts\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sSee Calendar\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sReserved Visits\n", Color_Yellow, Color_Aqua, Color_Reset);
@@ -1791,7 +1792,7 @@ void Doctor_Panel(int doc_login_id) {
                 break;
             
             case 4:
-                // 
+                DP_Patient_Prescription(doc_login_id);
                 break;
             
             case 5:
@@ -2728,6 +2729,128 @@ void DP_Reserved_Visits(int doc_id) {
         break;
 
     } // while end
+
+}
+
+
+
+//! ok
+void DP_Patient_Prescription(int doc_id) {
+
+    while (1) {
+
+        if (visit_count == 0) {
+            Bar_Status(2, doc_id);
+            printf("%sThere Are No Visits This Month%s\n", Color_Red_Dark, Color_Reset);
+            Sleep(3000);
+            return;
+        }
+
+        RUN_CLS;
+
+        printf("\n    %sPatient Prescription%s\n", Color_Purple, Color_Reset);
+        printf("  ------------------------------\n");
+
+        int not_found = 1;
+
+        for (int i=0; i<visit_count; i++) {
+
+            if ( strcmp(Visits[i].doc_code_n, Doctors[doc_id].code_n) != 0 ) continue;
+
+            not_found = 0;
+
+            visit vis = Visits[i];
+
+            char pat_name[NAME_SIZE];
+
+            strcpy(pat_name, Patients[PP_Find_Patient_By_N_Code(vis.pat_code_n)].name);
+
+            if (vis.see_visit == 0) {
+                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d~%d%s\n", Color_Green, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+            }
+
+            else {
+                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d~%d --- Done%s\n", Color_Gray, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+            }
+
+        } // end for
+
+        if (not_found) {
+            Bar_Status(2, doc_id);
+            printf("There Are no Visits for Doctor %s This Month\n", Doctors[doc_id].name);
+            Sleep(3000);
+            return;
+        }
+
+        Sleep(500);
+
+        Bar_Status(2, doc_id);
+        printf("Select one More (ID): ");
+
+        int IDSelect = User_Input_Number_Range(0, visit_count-1);
+
+        Sleep(500);
+
+        if (IDSelect == -1) continue;
+
+        if (IDSelect == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+
+        if ( strcmp(Visits[IDSelect].doc_code_n, Doctors[doc_id].code_n) != 0 ) {
+
+            Bar_Status(2, doc_id);
+            printf("Enter The Number of One of the Above Visits\n");
+            Sleep(3000);
+            continue;
+
+        }
+
+        if (Visits[IDSelect].see_visit == 1) {
+
+            Bar_Status(2, doc_id);
+            printf("The Prescription of this visit has Already been Written\n");
+            Sleep(3000);
+            continue;
+
+        }
+
+
+        Bar_Status(2, doc_id);
+        printf("What is Your Prescription: ");
+
+        char InPrescription[PRESCRIPTION_SIZE];
+
+        int IntPre = User_Input_String(InPrescription, PRESCRIPTION_SIZE, 0);
+
+        if(IntPre == -1) continue;
+
+        if(IntPre == -2) {
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+        strcpy(Visits[IDSelect].Prescription, InPrescription);
+        Visits[IDSelect].see_visit = 1;
+
+        Doctors[doc_id].wallet += Visits[IDSelect].doc_pay_visit;
+
+        Update_Files();
+
+        Bar_Status(2, doc_id);
+        printf("Your Prescription has been Successfully Registered\n");
+        Sleep(5000);
+
+
+        break;
+
+    } // while end
+
 
 }
 
