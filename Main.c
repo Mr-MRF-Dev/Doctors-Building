@@ -38,7 +38,6 @@ int run_cls = 1;
 //TODO:
 // off color
 // file Error Management
-// Hash PassWord
 
 
 
@@ -137,8 +136,6 @@ typedef struct patient {
 
 } patient;
 
-// Patient visit
-
 int patient_count = 0;
 #define PATIENT_MAX_COUNT 800
 patient Patients[PATIENT_MAX_COUNT];
@@ -221,7 +218,7 @@ int User_Input_Number_Range(int start, int end);
 
 
 
-//! ok
+
 int main() {
 
     RUN_CLS;
@@ -297,7 +294,7 @@ int main() {
 
 
 
-//! ok
+
 void Sign_In_Function() {
 
     while(1) {
@@ -420,7 +417,7 @@ void Sign_In_Function() {
 
 
 
-//! ok
+
 void Forgot_Password_Function() {
 
 
@@ -564,7 +561,7 @@ void Forgot_Password_Function() {
 
 
 
-//! ok
+
 void Bar_Status(int login, int id) {
     
     if (login == 0) {
@@ -591,7 +588,7 @@ void Bar_Status(int login, int id) {
 
 
 
-//! ok
+
 void Admin_Panel() {
 
     while (1) {
@@ -689,7 +686,7 @@ void Admin_Panel() {
 
 
 
-//! ok
+
 void AP_Add_Doctor() {
 
     doctor doc;
@@ -866,7 +863,7 @@ void AP_Add_Doctor() {
 
 
 
-//! ok
+
 void AP_Doctors_List() {
 
     RUN_CLS;
@@ -901,7 +898,7 @@ void AP_Doctors_List() {
 
 
 
-//! ok
+
 void AP_Add_Patient() {
 
     patient pat;
@@ -1058,7 +1055,7 @@ void AP_Add_Patient() {
 
 
 
-//! ok
+
 void AP_Patients_List() {
 
     RUN_CLS;
@@ -1088,7 +1085,7 @@ void AP_Patients_List() {
 
 
 
-//! ok
+
 void AP_Monthly_Schedule() {
 
     RUN_CLS;
@@ -1568,7 +1565,7 @@ void AP_Monthly_Schedule() {
 
 
 
-//! ok
+
 void AP_Visits_Schedule() {
 
     while(1) {
@@ -1739,7 +1736,7 @@ void AP_Visits_Schedule() {
 
 
 
-//! ok
+
 void Doctor_Panel(int doc_login_id) {
     
     while (1) {
@@ -1823,7 +1820,7 @@ void Doctor_Panel(int doc_login_id) {
 
 
 
-//! ok
+
 void DP_Determining_Shifts(int doc_id) {
 
     while(1) {
@@ -2228,7 +2225,7 @@ void DP_Determining_Shifts(int doc_id) {
 
 
 
-//! ok
+
 void DP_Print_Work_Time(int doc_id) {
 
     if (Doctors[doc_id].time_work.count_time_work == 0) return;
@@ -2270,7 +2267,7 @@ void DP_Print_Work_Time(int doc_id) {
 
 
 
-//! ok
+
 void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
     printf("\n    %s>>> %s # ", Color_Green, Doctors[doc_id].name);
@@ -2354,7 +2351,7 @@ void DP_Print_Calendar(int doc_id, int y, int m, int d, int week_d) {
 
 
 
-//! ok
+
 void DP_Visirs_Payment(int doc_id) {
     
     while(1) {
@@ -2422,7 +2419,7 @@ void DP_Visirs_Payment(int doc_id) {
 
 
 
-//! ok
+
 void DP_Rent_Payment(int doc_id) {
 
     while (1) {
@@ -2590,7 +2587,7 @@ void DP_Rent_Payment(int doc_id) {
 
 
 
-//! ok
+
 void DP_Reserved_Visits(int doc_id) {
 
     while(1) {
@@ -2737,7 +2734,7 @@ void DP_Reserved_Visits(int doc_id) {
 
 
 
-//! ok
+
 void DP_Patient_Prescription(int doc_id) {
 
     while (1) {
@@ -2859,7 +2856,7 @@ void DP_Patient_Prescription(int doc_id) {
 
 
 
-//! ok
+
 void Patient_Panel(int pat_login_id) {
     
     while (1) {
@@ -2926,7 +2923,7 @@ void Patient_Panel(int pat_login_id) {
 
 
 
-//! ok
+
 void PP_Book_An_Appointment(int pat_id) {
 
     while(1) {
@@ -3165,7 +3162,7 @@ void PP_Book_An_Appointment(int pat_id) {
 
 
 
-//! ok
+
 int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
 
     for (int i=0; i<doctor_count; i++) {
@@ -3184,7 +3181,7 @@ int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
 
 
 
-//! ok
+
 int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
     
     for (int i=0; i<patient_count; i++) {
@@ -3203,7 +3200,7 @@ int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
 
 
 
-//! ok
+
 void PP_Cancel_An_Appointment(int pat_id) {
 
     while(1) {
@@ -3312,7 +3309,7 @@ void PP_Cancel_An_Appointment(int pat_id) {
 
 
 
-//! ok
+
 void PP_All_Appointments(int pat_id) {
 
     while(1) {
@@ -3427,7 +3424,7 @@ void PP_All_Appointments(int pat_id) {
 
 
 
-//! ok
+
 void PP_Prescriptions(int pat_id) {
 
     while(1) {
@@ -3496,7 +3493,7 @@ void PP_Prescriptions(int pat_id) {
 
 
 
-//! ok
+
 void Print_Off_Date() {
 
     if (Cal_Off_Date_Count == 0) return;
@@ -3520,7 +3517,7 @@ void Print_Off_Date() {
 
 
 
-//! ok
+
 void Print_Calendar(int y, int m, int d, int week_d) {
 
     printf("\n    %s>>> ", Color_Green);
@@ -3588,7 +3585,7 @@ void Print_Calendar(int y, int m, int d, int week_d) {
 
 
 
-//! ok
+
 void Get_Files() {
 
     printf("%s# GET FILES #%s\n\n", Color_Red, Color_Reset);
@@ -3713,7 +3710,7 @@ void Get_Files() {
 
 
 
-//! ok
+
 void Update_Files() {
 
 
@@ -3808,7 +3805,7 @@ void Update_Files() {
 
 
 
-//! ok
+
 void Error_Management(int code) {
 
     printf("\n    %sError: %s", Color_Red, Color_Reset);
@@ -3962,7 +3959,7 @@ void Error_Management(int code) {
 
 
 
-//! ok
+
 int User_Input_Number_Range(int start, int end) {
     
     /*
@@ -4066,7 +4063,7 @@ int User_Input_Number_Range(int start, int end) {
 
 
 
-//! ok
+
 int User_Input_String(char* str_list, int str_size, int just_number) {
 
     /*
@@ -4130,7 +4127,7 @@ int User_Input_String(char* str_list, int str_size, int just_number) {
 
 
 
-//! ok
+
 int User_Input_PassWord(char* pass_list, int pass_size) {
 
     /*
@@ -4186,7 +4183,7 @@ int User_Input_PassWord(char* pass_list, int pass_size) {
 
 
 
-//! ok
+
 void Exit_Function(int bar_status_code, int exit_code, int login_code) {
     
     Bar_Status(bar_status_code, login_code);
@@ -4201,7 +4198,7 @@ void Exit_Function(int bar_status_code, int exit_code, int login_code) {
 
 
 
-//! ok
+
 void Main_Func_Get_User_Date() {
     
     while(1) {
@@ -4274,7 +4271,7 @@ void Main_Func_Get_User_Date() {
 
 
 
-//! ok
+
 void Main_Check_Active_Calendar() {
 
     if (Active_Calendar == 1) {
@@ -4383,7 +4380,7 @@ void Main_Check_Active_Calendar() {
 
 
 
-//! ok
+
 void Main_Reset_Doctors() {
 
     // reset all doctor info
@@ -4449,7 +4446,7 @@ void Main_Reset_Doctors() {
 
 
 
-//! ok
+
 void Print_WeekDay(int d) {
     
     switch (d) {
@@ -4482,7 +4479,7 @@ void Print_WeekDay(int d) {
 
 
 
-//! ok
+
 void Print_Month(int m) {
 
     switch (m) {
@@ -4529,7 +4526,7 @@ void Print_Month(int m) {
 
 
 
-//! ok
+
 void Hash_Function(char* str) {
 
     unsigned long i = 0;
