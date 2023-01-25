@@ -202,6 +202,7 @@ void Patient_Panel(int pat_login_id);
 void PP_Book_An_Appointment(int pat_id);
 int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
+void PP_Cancel_An_Appointment(int pat_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -2894,7 +2895,7 @@ void Patient_Panel(int pat_login_id) {
                 break;
             
             case 2:
-                //
+                PP_Cancel_An_Appointment(pat_login_id);
                 break;
             
             case 3:
@@ -3194,6 +3195,115 @@ int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]) {
     }
 
     return -1;
+
+}
+
+
+
+//! ok
+void PP_Cancel_An_Appointment(int pat_id) {
+
+    while(1) {
+
+        if (visit_count == 0) {
+            Bar_Status(3, pat_id);
+            printf("%sThere Are No Visits This Month%s\n", Color_Red_Dark, Color_Reset);
+            Sleep(3000);
+            return;
+        }
+
+        RUN_CLS;
+
+        printf("\n    %sCancel An Appointment%s\n", Color_Purple, Color_Reset);
+        printf("  ------------------------------\n");
+
+        int not_found = 1;
+
+        for (int i=0; i < visit_count; i++) {
+
+            visit vis = Visits[i];
+
+            if ( strcmp(vis.pat_code_n, Patients[pat_id].code_n) != 0 )continue;
+
+            not_found = 0;
+
+            char doc_name[NAME_SIZE];
+
+            strcpy(doc_name, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name);
+
+            if (vis.see_visit == 0) {
+                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d~%d%s\n", Color_Green, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+            }
+
+            else {
+                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d~%d --- This Visit is Done%s\n", Color_Gray, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+            }
+
+
+        } // for end
+        
+        if (not_found) {
+            Bar_Status(3, pat_id);
+            printf("There Are no Visits for Patient %s This Month\n", Patients[pat_id].name);
+            Sleep(3000);
+            return;
+        }
+
+        Bar_Status(3, pat_id);
+        printf("Select one More to Cancel (ID) (Ctrl+C ~ Back): ");
+
+        int IDSelect = User_Input_Number_Range(0, visit_count-1);
+
+        Sleep(500);
+
+        if (IDSelect == -1) continue;
+
+        if (IDSelect == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+        if ( strcmp(Visits[IDSelect].pat_code_n, Patients[pat_id].code_n) != 0 ) {
+
+            Bar_Status(3, pat_id);
+            printf("Enter The Number of One of the Above Visits\n");
+            Sleep(3000);
+            continue;
+
+        }
+
+        if (Visits[IDSelect].see_visit == 1) {
+
+            Bar_Status(3, pat_id);
+            printf("The Prescription of this Visit has Already been Written\n");
+            Sleep(3000);
+            continue;
+
+        }
+
+        Bar_Status(3, pat_id);
+        printf("Your Appointment has been Successfully Cancelled (+%d$)\n", Visits[IDSelect].doc_pay_visit / 2);
+
+        Patients[pat_id].wallet += Visits[IDSelect].doc_pay_visit / 2;
+
+        for (int i=IDSelect; i<visit_count-1; i++) {
+            
+            Visits[i] = Visits[i+1];
+            Visits[i].id--;
+
+        }
+
+        visit_count--;
+
+        Update_Files();
+
+        Sleep(3000);
+        break;
+
+    } // while end
+
 
 }
 
