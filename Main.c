@@ -204,6 +204,7 @@ int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 void PP_Cancel_An_Appointment(int pat_id);
 void PP_All_Appointments(int pat_id);
+void PP_Prescriptions(int pat_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -2768,11 +2769,11 @@ void DP_Patient_Prescription(int doc_id) {
             strcpy(pat_name, Patients[PP_Find_Patient_By_N_Code(vis.pat_code_n)].name);
 
             if (vis.see_visit == 0) {
-                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d~%d%s\n", Color_Green, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d ~ %d%s\n", Color_Green, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
             }
 
             else {
-                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d~%d --- Done%s\n", Color_Gray, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+                printf("    %sID: %d, Name: %s, Date: %d/%d/%d, Time: %d ~ %d --- Done%s\n", Color_Gray, vis.id, pat_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
             }
 
         } // end for
@@ -2858,6 +2859,7 @@ void DP_Patient_Prescription(int doc_id) {
 
 
 
+//! ok
 void Patient_Panel(int pat_login_id) {
     
     while (1) {
@@ -2904,7 +2906,7 @@ void Patient_Panel(int pat_login_id) {
                 break;
             
             case 4:
-                // 
+                PP_Prescriptions(pat_login_id);
                 break;
             
             case 5:
@@ -3233,11 +3235,11 @@ void PP_Cancel_An_Appointment(int pat_id) {
             strcpy(doc_name, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name);
 
             if (vis.see_visit == 0) {
-                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d~%d%s\n", Color_Green, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d ~ %d%s\n", Color_Green, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
             }
 
             else {
-                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d~%d --- This Visit is Done%s\n", Color_Gray, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
+                printf("    %sID: %d, Dr.Name: %s, Date: %d/%d/%d, Time: %d ~ %d --- This Visit is Done%s\n", Color_Gray, vis.id, doc_name, vis.Date.y, vis.Date.m, vis.Date.d, vis.start_time, vis.start_time+1, Color_Reset);
             }
 
 
@@ -3412,6 +3414,75 @@ void PP_All_Appointments(int pat_id) {
         printf("\n\n    %sDoctor Calendar %s\n", Color_Purple, Color_Reset);
 
         DP_Print_Calendar(doc_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+        printf("\n\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+        printf("%c\n", (char)getch() );
+        Sleep(500);
+
+        break;
+
+    } // while end
+
+}
+
+
+
+//! ok
+void PP_Prescriptions(int pat_id) {
+
+    while(1) {
+
+        if (visit_count == 0) {
+            Bar_Status(3, pat_id);
+            printf("%sThere Are No Visits This Month%s\n", Color_Red_Dark, Color_Reset);
+            Sleep(3000);
+            return;
+        }
+
+        RUN_CLS;
+
+        printf("\n    %sPrescriptions%s\n", Color_Purple, Color_Reset);
+        printf("  ------------------------------\n");
+
+        int not_found = 1;
+        
+        for (int i=0; i < visit_count; i++) {
+            
+            visit vis = Visits[i];
+
+            if ( strcmp(vis.pat_code_n, Patients[pat_id].code_n) == 0) {
+
+
+                if (vis.see_visit) {
+                    not_found = 0;
+                    printf("    %sVisit ID: %d, Cost: %d$%s\n", Color_Yellow, vis.id, vis.doc_pay_visit, Color_Reset);
+                    printf("    %sDate: %d/%d/%d, ", Color_Blue, vis.Date.y, vis.Date.m, vis.Date.d);
+                    printf("Time: %d ~ %d%s\n\n", vis.start_time, vis.start_time+1, Color_Reset);
+                    printf("    %sDoctor Name: %s%s%s\n\n", Color_Green, Color_Gray, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name, Color_Reset);
+                    printf("    %sPrescription: %s%s\n", Color_Aqua, Color_Reset, vis.Prescription);    
+                }
+
+                // else {
+                //     printf("    %sVisit ID: %d, Cost: %d$%s # ", Color_Yellow, vis.id, vis.doc_pay_visit, Color_Reset);
+                //     printf("%sDate: %d/%d/%d, ", Color_Blue, vis.Date.y, vis.Date.m, vis.Date.d);
+                //     printf("Time: %d ~ %d%s\n", vis.start_time, vis.start_time+1, Color_Reset);
+                //     printf("    %sDoctor Name: %s%s%s # ", Color_Green, Color_Gray, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name, Color_Reset);
+                //     printf("%sThe Doctor did not Check this Visit!%s\n", Color_Red_Dark, Color_Reset);    
+                // }
+            
+                printf("  ------------------------------\n");
+
+            }
+
+        }
+
+
+        if (not_found) {
+            Bar_Status(3, pat_id);
+            printf("There Are no Prescription for Patients %s This Month\n", Patients[pat_id].name);
+            Sleep(3000);
+            return;
+        }
 
         printf("\n\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
         printf("%c\n", (char)getch() );
