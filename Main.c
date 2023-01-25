@@ -203,6 +203,7 @@ void PP_Book_An_Appointment(int pat_id);
 int PP_Find_Doctor_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 int PP_Find_Patient_By_N_Code(char n_code[NATIONAL_CODE_SIZE]);
 void PP_Cancel_An_Appointment(int pat_id);
+void PP_All_Appointments(int pat_id);
 
 void Print_Calendar(int y, int m, int d, int week_d);
 void Print_WeekDay(int d);
@@ -2899,7 +2900,7 @@ void Patient_Panel(int pat_login_id) {
                 break;
             
             case 3:
-                // 
+                PP_All_Appointments(pat_login_id);
                 break;
             
             case 4:
@@ -3304,6 +3305,121 @@ void PP_Cancel_An_Appointment(int pat_id) {
 
     } // while end
 
+
+}
+
+
+
+//! ok
+void PP_All_Appointments(int pat_id) {
+
+    while(1) {
+
+        if (visit_count == 0) {
+            Bar_Status(3, pat_id);
+            printf("%sThere Are No Visits This Month%s\n", Color_Red_Dark, Color_Reset);
+            Sleep(3000);
+            return;
+        }
+
+        RUN_CLS;
+
+
+        printf("\n    %sAll Appointments%s\n", Color_Purple, Color_Reset);
+        printf("  ------------------------------\n");
+
+        int not_found = 1;
+        
+        for (int i=0; i < visit_count; i++) {
+            
+            visit vis = Visits[i];
+
+            if ( strcmp(vis.pat_code_n, Patients[pat_id].code_n) == 0) {
+
+                not_found = 0;
+            
+                printf("    %sVisit ID: %d, Cost: %d$%s\n", Color_Yellow, vis.id, vis.doc_pay_visit, Color_Reset);
+                printf("    %sDate: %d/%d/%d, ", Color_Blue, vis.Date.y, vis.Date.m, vis.Date.d);
+                printf("Time: %d ~ %d%s\n\n", vis.start_time, vis.start_time+1, Color_Reset);
+
+                printf("    %sDoctor Name: %s%s%s\n\n", Color_Green, Color_Gray, Doctors[PP_Find_Doctor_By_N_Code(vis.doc_code_n)].name, Color_Reset);
+                
+                if (vis.see_visit) {
+                    printf("    %sPrescription: %s%s\n", Color_Aqua, Color_Reset, vis.Prescription);    
+                }
+
+                else {
+                    printf("    The Doctor did not Check this Visit!\n");    
+                }
+
+                printf("  ------------------------------\n");
+
+            }
+
+        }
+
+
+        if (not_found) {
+            Bar_Status(3, pat_id);
+            printf("There Are no Visits for Patients %s This Month\n", Patients[pat_id].name);
+            Sleep(3000);
+            return;
+        }
+
+        Sleep(500);
+
+        Bar_Status(3, pat_id);
+        printf("To See Doctor Info, Select one More (ID Visit)(Ctrl+C ~ Back): ");
+
+        int ID_Visit = User_Input_Number_Range(0, visit_count-1);
+
+        Sleep(500);
+
+        if (ID_Visit == -1) continue;
+
+        if (ID_Visit == -2) {
+            // ctrl + c ~ code -2
+            printf("Back\n");
+            Sleep(3000);
+            return;
+        }
+
+        if ( strcmp(Visits[ID_Visit].pat_code_n, Patients[pat_id].code_n) != 0 ) {
+
+            Bar_Status(3, pat_id);
+            printf("Enter The Number of One of the Above Visits\n");
+            Sleep(3000);
+            continue;
+
+        }
+
+        RUN_CLS;
+
+        int doc_id = PP_Find_Doctor_By_N_Code(Visits[ID_Visit].doc_code_n);
+
+        doctor doc = Doctors[doc_id];
+
+        printf("\n    %sDoctor Info %s\n", Color_Purple, Color_Reset);
+        printf("  ------------------------------\n");
+
+        printf("    %sDoctor Name:      %s%s\n", Color_Blue, Color_Reset, doc.name);
+        printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
+        printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
+        printf("    %sCost Visit:       %s%d$\n", Color_Green, Color_Reset, doc.visit_pay);
+
+        printf("  ------------------------------\n");
+
+        printf("\n\n    %sDoctor Calendar %s\n", Color_Purple, Color_Reset);
+
+        DP_Print_Calendar(doc_id, Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+
+        printf("\n\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+        printf("%c\n", (char)getch() );
+        Sleep(500);
+
+        break;
+
+    } // while end
 
 }
 
