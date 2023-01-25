@@ -227,15 +227,15 @@ int main() {
 
     RUN_CLS;
 
-    if (Active_Calendar) {
-        Main_Func_Get_User_Date();
-    }
+    
+    Main_Func_Get_User_Date();
+    
 
-    else {
-        Bar_Status(0, 0);
-        printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
-        Sleep(5000);
-    }
+    // else {
+    //     Bar_Status(0, 0);
+    //     printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
+    //     Sleep(5000);
+    // }
 
     Main_Check_Active_Calendar();
 
@@ -623,6 +623,15 @@ void Admin_Panel() {
             Exit_Function(1, 0, 0);
         }
 
+
+        if (!Active_Calendar && AdminInput != 5) {
+            Bar_Status(1, 0);
+            printf("%sSet the Calendar First!%s\n", Color_Red, Color_Reset);
+            Sleep(3000);
+            continue;
+        }
+
+
         switch (AdminInput) {
         
             case 1:
@@ -646,23 +655,15 @@ void Admin_Panel() {
                 break;
             
             case 6:
-                if (Active_Calendar) {
-                    RUN_CLS;
-                    Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
-                    Print_Off_Date();
+                RUN_CLS;
+                Print_Calendar(Date_Start_Cal.y, Date_Start_Cal.m, Date_Start_Cal.d, Date_Start_Cal.week_d);
+                Print_Off_Date();
 
-                    printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
-                    printf("%c\n", (char)getch() );
-                    Sleep(500);
-                    break;
-                }
-
-                else {
-                    Bar_Status(1, 0);
-                    printf("%sSet the Calendar First!%s\n", Color_Red, Color_Reset);
-                    Sleep(3000);
-                    break;
-                }
+                printf("\n%sPress a Button to Continue...     %s", Color_Gray, Color_Reset);
+                printf("%c\n", (char)getch() );
+                Sleep(500);
+                break;
+                
             
             case 7:
                 AP_Visits_Schedule();
