@@ -231,12 +231,6 @@ int main() {
     Main_Func_Get_User_Date();
     
 
-    // else {
-    //     Bar_Status(0, 0);
-    //     printf("%sThe Program Calendar is Not Set%s\n", Color_Red, Color_Reset);
-    //     Sleep(5000);
-    // }
-
     Main_Check_Active_Calendar();
 
     while (1) {
@@ -1597,7 +1591,7 @@ void AP_Visits_Schedule() {
             return;
         }
 
-        if (visit_count == 0) {
+        if (visit_count == 0 && AdminInput != 3) {
             Bar_Status(1, 0);
             printf("%sThere Are No Visits This Month%s\n", Color_Red_Dark, Color_Reset);
             Sleep(3000);
@@ -2428,7 +2422,7 @@ void DP_Rent_Payment(int doc_id) {
         RUN_CLS;
 
         Bar_Status(2, doc_id);
-        printf("Rent Payment ~ Wallet: %d$, Ext: %d\n\n", Doctors[doc_id].wallet, Doctors[doc_id].pay_rent_ext);
+        printf("Rent Payment ~ Wallet: %d$, Ext: %s\n\n", Doctors[doc_id].wallet, (Doctors[doc_id].pay_rent_ext)?("True"):("False"));
         printf("    %s1 %s> %sExtension\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s2 %s> %sPayment\n", Color_Yellow, Color_Aqua, Color_Reset);
         printf("    %s3 %s> %sBack\n", Color_Yellow, Color_Aqua, Color_Reset);
