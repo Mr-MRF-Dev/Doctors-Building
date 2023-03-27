@@ -38,11 +38,12 @@ int run_cls = 1;
 
 
 //** Define Const Num
-#define CAPACITY 98765432100 // Size of the Hash
 #define NAME_SIZE 31
 #define EMAIL_SIZE 51
 #define NATIONAL_CODE_SIZE 11
 #define PASSWORD_SIZE 31
+#define HASH_PART 3 // Hash Partition
+#define HASH_CAPACITY 995533 // Size of the Hash
 #define PRESCRIPTION_SIZE 201
 
 
@@ -4523,39 +4524,74 @@ void Print_Month(int m) {
 
 void Hash_Function(char* str) {
 
-    unsigned long i = 0;
+    int str_len = 0;
+    for (str_len = 0; str[str_len]; str_len++);
+    
+    srand( HASH_CAPACITY + ( HASH_CAPACITY / ( str_len + 1 ) ) );
+    char str_tmp[PASSWORD_SIZE];
+    strcpy(str_tmp, str);
 
+    unsigned long long hash_code = rand();
 
-    int count = 0;
+    /*
+    32 in ancii code is space
+    126 in ancii code is ~
 
+    Ex: 126 - 32 / 3 = 31 ~ ancii step
 
-    for (count = 0; str[count]; count++) {
+    part 1 = 32 ~ 63
+    part 2 = 63 ~ 94
+    part 3 = 94 ~ 125
+
+    */
+    
+    int ancii_step = (126 - 32) / HASH_PART;
+
+    /*
+    
+    Ex: str_step = 30 / 3 = 10
+    Ex: last_char_str_step = 30 % 3 + 1 = 1
+
+    +1 ---> char[30] no set
+
+    Ex: str_step = 30 / 7 = 4
+    Ex: last_char_str_step = 30 % 7 + 1 = 3
+
+    */
+    
+    int str_step = (PASSWORD_SIZE - 1) / HASH_PART;
+    int last_char_str_step = (PASSWORD_SIZE - 1) % HASH_PART + 1;
+
+    for (int count = 0, j=0; count < str_step; count++, j++, hash_code %= HASH_CAPACITY) {
         
-        i += str[count];
+        if (j >= str_len) j = 0;
+        hash_code += str_tmp[rand() % str_len];
+        hash_code *= 3;
+        hash_code += (hash_code % 10 == 0) ? (++hash_code * 4) : ( (int)(str_tmp[rand() % str_len]) * count * 3);
+        hash_code += count;
+        hash_code += (hash_code % 7 == 0) ? ((int)(str_tmp[rand() % str_len]) * count * 2) : (hash_code-- * 8);
+        hash_code *= 9;
+        hash_code += str_tmp[rand() % str_len];
 
-        i *= 3;
+        for (int i=0; i<HASH_PART; i++) {
+            
+            char tmp_char = (char)(hash_code % ancii_step + 32 + (i * ancii_step));
+            str[count + (str_step * i)] = tmp_char;
 
-        i += count;
+            (i % 2 == 0) ? (hash_code += rand()) : (hash_code -= rand());
 
-        i += (i % 10 == 0)?(++i*4):(i*3);
-
-        i += (i % 7 == 0)?(i*2):(i*8);
-
-    }
-
-
-    i = i % CAPACITY;
-
-
-    for (int j = 0; j < count; j++) {
-
-        str[j] = (char)(i % 10 + 48);
-
-        i /= 10;
+        }
 
     }
+   
+    for (int i = 0; i < last_char_str_step; i++) {
 
-    str[count] = '\0';
+        str[(PASSWORD_SIZE - 1) - i] = (char)(hash_code % 95 + 32);
+        (i % 2 == 0) ? (hash_code *= (i + 2), hash_code -= rand()) : (hash_code /= (i + 2), hash_code += rand());
+    
+    }
+
+    str[PASSWORD_SIZE] = '\0';
 
 }
 
