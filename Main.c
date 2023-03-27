@@ -8,10 +8,6 @@
 
 
 
-#pragma warning(disable:140)
-
-
-
 //** Colors
 char Color_Reset[] = "\033[0m";
 char Color_Red[] = "\033[0;31m";
@@ -284,6 +280,7 @@ int main() {
 
 
     return 0;
+
 }
 
 
@@ -870,15 +867,16 @@ void AP_Doctors_List() {
         
         doctor doc = Doctors[i];
 
-        printf("    %sDoctor Name:      %s%s\n", Color_Blue, Color_Reset, doc.name);
-        printf("    %sNational Code:    %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
-        printf("    %sDoctor Email:     %s%s\n", Color_Yellow, Color_Reset, doc.email);
-        printf("    %sDoctor ID:        %s%d\n", Color_Green, Color_Reset, doc.id);
-        printf("    %sWallet:           %s%d$\n", Color_Green, Color_Reset, doc.wallet);
-        printf("    %sCost Visit:       %s%d$\n", Color_Green, Color_Reset, doc.visit_pay);
-        printf("    %sRent:             %s%d$\n", Color_Green, Color_Reset, doc.pay_total);
-        printf("    %sIs Extension:     %s%d\n", Color_Green, Color_Reset, doc.pay_rent_ext);
-        printf("    %sDeadLine:         %s%d/%d\n", Color_Green, Color_Reset, doc.pay_deadline.y, doc.pay_deadline.m);
+        printf("    %sDoctor Name:             %s%s\n", Color_Blue, Color_Reset, doc.name);
+        printf("    %sNational Code:           %s%s\n", Color_Yellow, Color_Reset, doc.code_n);
+        printf("    %sDoctor Email:            %s%s\n", Color_Yellow, Color_Reset, doc.email);
+        printf("    %sDoctor Password(Hash):   %s%s\n", Color_Red_Dark, Color_Reset, doc.password);
+        printf("    %sDoctor ID:               %s%d\n", Color_Green, Color_Reset, doc.id);
+        printf("    %sWallet:                  %s%d$\n", Color_Green, Color_Reset, doc.wallet);
+        printf("    %sCost Visit:              %s%d$\n", Color_Green, Color_Reset, doc.visit_pay);
+        printf("    %sRent:                    %s%d$\n", Color_Green, Color_Reset, doc.pay_total);
+        printf("    %sIs Extension:            %s%d\n", Color_Green, Color_Reset, doc.pay_rent_ext);
+        printf("    %sDeadLine:                %s%d/%d\n", Color_Green, Color_Reset, doc.pay_deadline.y, doc.pay_deadline.m);
 
 
         printf("  ------------------------------\n");
@@ -1062,11 +1060,12 @@ void AP_Patients_List() {
         
         patient pat = Patients[i];
 
-        printf("    %sPatient Name:      %s%s\n", Color_Blue, Color_Reset, pat.name);
-        printf("    %sNational Code:     %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
-        printf("    %sPatient Email:     %s%s\n", Color_Yellow, Color_Reset, pat.email);
-        printf("    %sPatient ID:        %s%d\n", Color_Green, Color_Reset, pat.id);
-        printf("    %sWallet:            %s%d$\n", Color_Green, Color_Reset, pat.wallet);
+        printf("    %sPatient Name:             %s%s\n", Color_Blue, Color_Reset, pat.name);
+        printf("    %sNational Code:            %s%s\n", Color_Yellow, Color_Reset, pat.code_n);
+        printf("    %sPatient Email:            %s%s\n", Color_Yellow, Color_Reset, pat.email);
+        printf("    %sPatient Password(Hash):   %s%s\n", Color_Red_Dark, Color_Reset, pat.password);
+        printf("    %sPatient ID:               %s%d\n", Color_Green, Color_Reset, pat.id);
+        printf("    %sWallet:                   %s%d$\n", Color_Green, Color_Reset, pat.wallet);
 
         printf("  ------------------------------\n");
     
@@ -4534,13 +4533,13 @@ void Hash_Function(char* str) {
         
         i += str[count];
 
-        i *= 9;
+        i *= 3;
 
         i += count;
 
-        i = (i % 10 == 0)?(++i*4):(i*3);
+        i += (i % 10 == 0)?(++i*4):(i*3);
 
-        i = (i % 7 == 0)?(i*2):(i*8);
+        i += (i % 7 == 0)?(i*2):(i*8);
 
     }
 
@@ -4550,10 +4549,7 @@ void Hash_Function(char* str) {
 
     for (int j = 0; j < count; j++) {
 
-        
-        if (j == 0) break;
-
-        str[j] = i % 10;
+        str[j] = (char)(i % 10 + 48);
 
         i /= 10;
 
