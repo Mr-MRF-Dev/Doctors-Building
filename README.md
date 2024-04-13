@@ -2,6 +2,8 @@
 
 My Project in FOP (fundamental of programming) (BP (basic programming)) With C Programming Language.
 
+![Screenshot](/images/screenshot.png)
+
 > Note: This project uses `windows.h` header file,
 > which is specific to Windows systems and may not work on
 > Linux and Mac. Contributions to make it compatible with other platforms are welcome.
