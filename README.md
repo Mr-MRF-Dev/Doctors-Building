@@ -49,15 +49,15 @@ My Project in FOP (fundamental of programming) (BP (basic programming)) With C P
 
 ## ✨️ Features
 
-- Hash Password: Use a simple hash to handle the password hashing and verification process.
+- Hash Password: Use a simple hash to handle the password hashing and verification.
 - Login Page: Users can authenticate themselves on the platform.
 - Admin Panel: Gain access to the admin panel to perform administrative tasks.
 - Doctor Account: doctor can view medical histories and prescribe treatments.
-- Patient Account: Patient can view personal health information, appointment schedules, and test results.
+- Patient Account: The patient can view personal health information, appointment schedules, and test results.
 
 ## 📝 Request for Proposal ( [RFP](https://en.wikipedia.org/wiki/Request_for_proposal) )
 
-A simple RFP for the project.
+A simple RFP for this project.
 
 1. Login Page 🔒
 
@@ -65,7 +65,7 @@ A simple RFP for the project.
    - Forgot password
    - Exit
 
-2. Secretary Acconut (Admin) 👾
+2. Secretary Account (Admin) 👾
 
     - Add Doctor
     - Add Patient
@@ -73,7 +73,7 @@ A simple RFP for the project.
     - Visits Schedule
     - Exit
 
-3. Doctor's Acconut 🧑🏻‍⚕️
+3. Doctor's Account 🧑🏻‍⚕️
 
     - Determining the shifts
     - Reserved Visits
