@@ -1,8 +1,10 @@
 # 🏥 Doctors' Building
 
-My Project in FOP (fundamental of programming) (BP (basic programming)) With C Programming Language.
+a comprehensive healthcare management system with distinct user roles and functionalities for secretaries, doctors, and patients. This system aims to streamline healthcare management by providing tailored functionalities for secretaries, doctors, and patients, ensuring efficient and organized operations.
 
 ![Screenshot](/images/screenshot.png)
+
+My Project in FOP (fundamental of programming) (BP (basic programming)) With C Programming Language.
 
 > Note: This project uses `windows.h` header file,
 > which is specific to Windows systems and may not work on
