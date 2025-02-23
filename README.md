@@ -40,13 +40,50 @@ My Project in FOP (fundamental of programming) (BP (basic programming)) With C P
     Compile the program using a C compiler. For example, using GCC:
 
     ```bash
-    gcc .\Main.c -o Main
+    gcc .\Main.c -o Doctors-Building
     ```
 
 4. Run the Program
 
     ```bash
-    ./Main.exe
+    ./Doctors-Building.exe
+    ```
+
+### Compile with CMake
+
+after cloning the repository, you can compile the project using [CMake](https://cmake.org/download/):
+
+1. Navigate to the Project Directory
+
+    ```bash
+    cd ./Doctors-Building
+    ```
+
+2. Create a build directory
+
+   ```bash
+   mkdir build
+   cd build
+   ```
+
+3. Build the project using the following commands:
+
+    ```bash
+    cmake ..
+    make
+    ```
+
+    Or use [MinGW MakeFiles](https://cmake.org/cmake/help/latest/generator/MinGW%20Makefiles.html) by running: (Windows)
+
+    ```bash
+    cmake .. -G "MinGW Makefiles"
+    mingw32-make
+    ```
+
+4. Run Project!
+
+    ```bash
+    ./Doctors-Building.exe
     ```
 
 ## ✨️ Features
@@ -54,8 +91,8 @@ My Project in FOP (fundamental of programming) (BP (basic programming)) With C P
 - Hash Password: Use a simple hash to handle the password hashing and verification.
 - Login Page: Users can authenticate themselves on the platform.
 - Admin Panel: Gain access to the admin panel to perform administrative tasks.
-- Doctor Account: doctor can view medical histories and prescribe treatments.
-- Patient Account: The patient can view personal health information, appointment schedules, and test results.
+- Doctor Account: Doctors can view medical histories and prescribe treatments.
+- Patient Account: Patients can view personal health information, appointment schedules, and test results.
 
 ## 📝 Request for Proposal ( [RFP](https://en.wikipedia.org/wiki/Request_for_proposal) )
 
