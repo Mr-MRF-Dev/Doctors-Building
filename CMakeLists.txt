@@ -7,12 +7,12 @@ project(DoctorsBuilding C)
 set(CMAKE_C_STANDARD 99)
 
 # Add the executable
-add_executable(Main src/Main.c)
+add_executable(Doctors-Building src/Main.c)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # Platform-specific settings
 if(WIN32)
-    target_link_libraries(Main ws2_32)
+    target_link_libraries(Doctors-Building ws2_32)
 endif()
