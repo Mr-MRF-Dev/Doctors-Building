@@ -1,10 +1,33 @@
-#include <conio.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <windows.h>
+
+#ifdef _WIN32
+    #include <conio.h>
+    #include <windows.h>
+    #define CLEAR_SCREEN "cls"
+#else
+    #include <termios.h>
+    #include <unistd.h>
+    #define CLEAR_SCREEN "clear"
+
+int getch(void) {
+    struct termios oldattr, newattr;
+    int ch;
+    tcgetattr(STDIN_FILENO, &oldattr);
+    newattr = oldattr;
+    newattr.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
+    ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+    return ch;
+}
+
+void Sleep(int milliseconds) { usleep(milliseconds * 1000); }
+
+#endif
 
 //** Colors
 char Color_Reset[] = "\033[0m";
@@ -23,21 +46,21 @@ char Color_Green_Blue[] = "\033[38;2;0;200;80m";
 
 //** cls Command
 int run_cls = 1;
-#define RUN_CLS \
-    if (run_cls) system("cls")
+    #define RUN_CLS \
+        if (run_cls) system("cls")
 
 // TODO:
 //  off color
 //  file Error Management
 
 //** Define Const Num
-#define NAME_SIZE 31
-#define EMAIL_SIZE 51
-#define NATIONAL_CODE_SIZE 11
-#define PASSWORD_SIZE 31
-#define HASH_PART 3           // Hash Partition
-#define HASH_CAPACITY 995533  // Size of the Hash
-#define PRESCRIPTION_SIZE 201
+    #define NAME_SIZE 31
+    #define EMAIL_SIZE 51
+    #define NATIONAL_CODE_SIZE 11
+    #define PASSWORD_SIZE 31
+    #define HASH_PART 3           // Hash Partition
+    #define HASH_CAPACITY 995533  // Size of the Hash
+    #define PRESCRIPTION_SIZE 201
 
 //** Data:
 
@@ -64,7 +87,7 @@ typedef struct off_date {
 } off_date;
 
 char off_date_path[] = "off-date.bin";
-#define OFF_DATE_MAX_COUNT 31
+    #define OFF_DATE_MAX_COUNT 31
 int Cal_Off_Date_Count = 0;
 off_date Cal_Off_Date[OFF_DATE_MAX_COUNT];
 
@@ -100,7 +123,7 @@ typedef struct doctor {
 } doctor;
 
 int doctor_count = 0;
-#define DOCTOR_MAX_COUNT 50
+    #define DOCTOR_MAX_COUNT 50
 doctor Doctors[DOCTOR_MAX_COUNT];
 char doctor_file_path[] = "doctor.bin";
 
@@ -116,7 +139,7 @@ typedef struct patient {
 } patient;
 
 int patient_count = 0;
-#define PATIENT_MAX_COUNT 800
+    #define PATIENT_MAX_COUNT 800
 patient Patients[PATIENT_MAX_COUNT];
 char patient_file_path[] = "patient.bin";
 
@@ -139,7 +162,7 @@ typedef struct visit {
 } visit;
 
 int visit_count = 0;
-#define VISIT_MAX_COUNT 1000
+    #define VISIT_MAX_COUNT 1000
 visit Visits[VISIT_MAX_COUNT];
 char visit_file_path[] = "visit.bin";
 
