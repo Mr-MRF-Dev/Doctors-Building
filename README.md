@@ -1,15 +1,15 @@
 # 🏥 Doctors' Building
 
+![GitHub repo size](https://img.shields.io/github/repo-size/mr-mrf-dev/Doctors-Building)
+[![CMake on multiple platforms](https://github.com/Mr-MRF-Dev/Doctors-Building/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/Mr-MRF-Dev/Doctors-Building/actions/workflows/cmake-multi-platform.yml)
+[![GitHub License](https://img.shields.io/github/license/mr-mrf-dev/Doctors-Building)](/LICENSE)
+
 a comprehensive healthcare management system with distinct user roles and functionalities for secretaries, doctors, and patients. This system aims to streamline healthcare management by providing tailored functionalities for secretaries, doctors, and patients, ensuring efficient and organized operations.
 
 ![Screenshot](/images/screenshot.png)
 
 My Project in FOP (fundamental of programming) (BP (basic programming)) With C Programming Language.
 
-> Note: This project uses `windows.h` header file,
-> which is specific to Windows systems and may not work on
-> Linux and Mac. Contributions to make it compatible with other platforms are welcome.
->
 > I recommend using [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701)
 > for the best experience.
 
